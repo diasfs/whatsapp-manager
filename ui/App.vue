@@ -9,8 +9,7 @@
     }
 </script>
 
-<template>
-  <h1>teste</h1>
+<template>  
   <router-view></router-view>
 </template>
 
