@@ -4,6 +4,8 @@
 </template>
 <script>
     import SessionStorage from "../lib/session-storage"
+    import api from '../lib/api';
+
     export default {
         methods: {
             signOut() {
@@ -11,11 +13,13 @@
                 this.$router.replace('/login');
             }
         },
-        created() {
+        async created() {
             const access_token = SessionStorage.getItem('access_token');
             if (!access_token) {
-                this.$router.replace('/login')
+                return this.$router.replace('/login')
             }
+            let { data } = await api.get('/user');
+            console.log(data)
         }
     }
 </script>
