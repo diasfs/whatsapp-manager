@@ -39,7 +39,7 @@ User.init({
     password: {
         type: DataTypes.STRING,
         set(value) {
-            this.setDataValue('password', bcrypt.hashSync(value))
+            this.setDataValue('password', bcrypt.hashSync(value, 10))
         }
     }
 },{
