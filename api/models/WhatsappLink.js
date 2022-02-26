@@ -13,7 +13,7 @@ WhatsappLink.init({
         defaultValue: DataTypes.UUIDV4
     },
     link: {
-        type: DataTypes.string
+        type: DataTypes.STRING
     },
     isSuspicious: {
         type: DataTypes.DOUBLE
