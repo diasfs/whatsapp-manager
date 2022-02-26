@@ -32,7 +32,7 @@ router.post('/sign-in', async (req, res) => {
 
     } catch (err) {
         res.status(401).json({
-            message: err.message
+            error: err.message
         });
     }
 });
@@ -67,6 +67,7 @@ router.post('/sign-up', async (req, res) => {
                 password
             });
         } catch (err) {
+            console.log(err.message);
             throw new Error("Não foi possível efetuar o cadastro, por favor, tente novamente mais tarde ou contate o suporte.");
         }
 
@@ -76,7 +77,7 @@ router.post('/sign-up', async (req, res) => {
 
     } catch (err) {
         res.status(500).json({
-            message: err.message
+            error: err.message
         });
     }
 });
@@ -121,7 +122,7 @@ router.post('/save', AuthMiddleware, async (req, res) =>  {
 
     } catch (err) {
         res.status(500).json({
-            message: err.message
+            error: err.message
         });
     }
 });
@@ -139,7 +140,7 @@ router.get('/', AuthMiddleware, async (req, res) => {
 
     } catch (err) {
         res.status(500).json({
-            message: err.message
+            error: err.message
         });
     }
 })
