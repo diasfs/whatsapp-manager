@@ -66,8 +66,7 @@ router.post('/sign-up', async (req, res) => {
                 email,
                 password
             });
-        } catch (err) {
-            console.log(err.message);
+        } catch (err) {            
             throw new Error("Não foi possível efetuar o cadastro, por favor, tente novamente mais tarde ou contate o suporte.");
         }
 
