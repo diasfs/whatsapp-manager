@@ -3,8 +3,7 @@
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
     export default {
         async mounted() {
-            let data = await fetch('/api').then(resp => resp.json());
-            console.log(data);
+           
         }
     }
 </script>
