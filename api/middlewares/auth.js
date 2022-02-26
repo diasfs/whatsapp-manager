@@ -4,14 +4,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default (req, res, next) => {
-    try {
+    try {        
         let access_token = req.headers['authorization']||req.headers['x-access-token']||req.query.access_token;
+        
         if (!access_token) {
             throw new Error("Unauthorized");
         }
-        access_token = access_token.replace(/^Bearer\s*/);
+        access_token = access_token.replace(/^Bearer\s*/, '');        
         
-        let decoded = jwt.verify(access_token, JWT_SECRET);
+        let decoded = jwt.verify(access_token, process.env.JWT_SECRET);
         req.userId = decoded.id;
 
         next();
