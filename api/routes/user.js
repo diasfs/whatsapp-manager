@@ -137,6 +137,12 @@ router.get('/', AuthMiddleware, async (req, res) => {
             throw new Error("Cadastro não encontrado.");
         }
 
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email
+        })
+
     } catch (err) {
         res.status(500).json({
             error: err.message
