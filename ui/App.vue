@@ -1,15 +1,35 @@
 <script>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-    export default {
-        async mounted() {
-           
-        }
+  import DefaultLayout from './layouts/Default.vue';
+  import LoginLayout from './layouts/Login.vue';
+
+  import SessionStore from './lib/session-storage';
+
+  export default {
+    components: {
+      DefaultLayout,
+      LoginLayout
+    },
+    data() {
+      return {
+        access_token: SessionStore.getItem('access_token')
+      }
+    },
+    mounted() {
+      window.addEventListener('storage', () => {
+        this.access_token = SessionStore.getItem('access_token')
+      })
     }
+  }
 </script>
 
 <template>  
-  <router-view></router-view>
+
+  <LoginLayout v-if="!access_token">
+    <router-view></router-view>
+  </LoginLayout>
+  <DefaultLayout v-else>
+    <router-view></router-view>
+  </DefaultLayout>
 </template>
 
 <style>
