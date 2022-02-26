@@ -2,3 +2,4 @@
 .env
 Referencia.md
 database.sqlite
+/public
