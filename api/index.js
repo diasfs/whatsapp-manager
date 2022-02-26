@@ -24,7 +24,7 @@ app.get('/api', (req, res) => {
     });
 });
 
-app.use('/', UserRouter);
+app.use('/api/user', UserRouter);
 
 
 const PORT = process.env.PORT||3000
