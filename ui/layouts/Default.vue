@@ -8,223 +8,24 @@
     </nav>
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-none d-md-block px-0 bg-secondary sidebar">
-                <div class="sidebar-sticky bg-secondary">
-                    <div class="bg-primary">
-                        <div class="bg-secondary py-2 rounded-top"></div>
-                    </div>
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link text-secondary active" href="#">
-                                <span data-feather="home"></span>
-                                Início
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file"></span>
-                                Atendimento
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="shopping-cart"></span>
-                                CRM
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="users"></span>
-                                Funil
-                            </a>
-                        </li>
-                    </ul>
-
-                    <h6
-                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
-                    >
-                        <span>Transmissão</span>
-                        <a class="d-flex align-items-center text-muted" href="#">
-                            <span data-feather="plus-circle"></span>
-                        </a>
-                    </h6>
-
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                WhatsApp
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Mensagens enviadas
-                            </a>
-                        </li>
-                    </ul>
-
-                    <h6
-                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
-                    >
-                        <span>Importar</span>
-                        <a class="d-flex align-items-center text-muted" href="#">
-                            <span data-feather="plus-circle"></span>
-                        </a>
-                    </h6>
-
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Grupos do WhatsApp
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Contatos do WhatsApp
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Contatos de Conversas do WhatsApp
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Seguidores do Instagram
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Importar CSV
-                            </a>
-                        </li>
-                    </ul>
-
-                    <h6
-                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
-                    >
-                        <span>Configurações</span>
-                        <a class="d-flex align-items-center text-muted" href="#">
-                            <span data-feather="plus-circle"></span>
-                        </a>
-                    </h6>
-
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Minhas Tags
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                WhatsApp
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Trocar Senha
-                            </a>
-                        </li>
-                    </ul>
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <span data-feather="file-text"></span>
-                                Sair
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <Sidebar></Sidebar>
             <main role="main" class="col-md-8 col-lg-9 ml-sm-auto col-lg-10 pt-3 px-4">
                 <slot></slot>
             </main>
         </div>
     </div>
 </template>
+<script>
+    import Sidebar from '../components/sidebar.vue';
+    export default {
+        components: {
+            Sidebar
+        }
+    }
+</script>
 <style lang="less" >
     #app {
         height: 100%;
-    }
-    .sidebar{
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        padding: 0;
-        padding-top: 83px;
-        box-shadow: inset -1px 0 0 rgba(0,0,0,0.1);
-        .rounded-top {
-            border-top-left-radius: 1.5rem!important;
-            border-top-right-radius: 1.5rem!important;
-            margin-bottom: 10px;
-        }
-        .nav-item {
-            padding-left: 1em;
-            a.nav-link {
-                color: white;
-                font-size: 0.65em;
-                
-                &.active {
-                    background-color: white;
-                    border-radius: 200px 0 0 200px;
-                    position: relative;
-                    &::after, &::before {
-                        content: '';
-                        position: absolute;
-                        background: var(--bs-secondary);;
-                        width: 10px;
-                        height: 10px;
-                        right: 0px;
-                        
-                    }
-                    &::after {
-                        bottom: -10px;
-                        border-top-right-radius: 10px;
-                        box-shadow: 5px -3px 0 2px white;
-                    }
-                    &::before {                        
-                        top: -10px;
-                        border-bottom-right-radius: 10px;
-                        box-shadow: 5px 3px 0 2px white;
-                    }
-                }
-                margin-top: 0.25em;
-                margin-bottom: 0.25em;
-            }
-        }
-
-        ul.nav:last-child {
-            margin-top: 3em;
-            
-        }
-    }
-    .sidebar-sticky {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 48px;
-        height: ~"calc(100vh - 83px)";
-        //padding-top: 0.5rem;
-        overflow-x: hidden;
-        overflow-y: auto;
-    }
-    .sidebar-heading {
-        font-size: 0.65rem;
-        text-transform: uppercase;
-        span {
-            padding-left: 1em;
-
-            color: rgba(255,255,255,0.75);
-        }
     }
     
 </style>
