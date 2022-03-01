@@ -44,8 +44,8 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">Grupos do WhatsApp</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contatos do WhatsApp</a>
+                <li class="nav-item">                    
+                    <router-link class="nav-link" active-class="active" to="/importar/whatsapp/contatos">Contatos do WhatsApp</router-link>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Contatos de Conversas do WhatsApp</a>
@@ -69,7 +69,7 @@
                     <a class="nav-link" href="#">Minhas Tags</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">WhatsApp</a>
+                    <router-link class="nav-link" active-class="active" to="/configuracoes/whatsapp">WhatsApp</router-link>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Trocar Senha</a>
@@ -90,7 +90,7 @@
     bottom: 0;
     left: 0;
     padding: 0;
-    padding-top: 83px;
+    padding-top: 72px;
     box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
     .rounded-top {
         border-top-left-radius: 1.5rem !important;
@@ -107,6 +107,7 @@
                 background-color: white;
                 border-radius: 200px 0 0 200px;
                 position: relative;
+                color: var(--bs-secondary);
                 &::after,
                 &::before {
                     content: "";
@@ -140,7 +141,7 @@
     position: -webkit-sticky;
     position: sticky;
     top: 48px;
-    height: ~"calc(100vh - 83px)";
+    height: ~"calc(100vh - 72px)";
     //padding-top: 0.5rem;
     overflow-x: hidden;
     overflow-y: auto;
