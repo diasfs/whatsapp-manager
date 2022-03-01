@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "ms-ceintl.vscode-language-pack-pt-br",
+        "johnsoncodehk.volar",
+        "ms-vscode.sublime-keybindings",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag",
+        "esbenp.prettier-vscode",
+        "christian-kohler.npm-intellisense",
+        "leizongmin.node-module-intellisense",
+        "octref.vetur",
+        "formulahendry.vscode-mysql",
+        "cweijan.vscode-mysql-client2"
+    ]
+}

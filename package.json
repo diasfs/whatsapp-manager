@@ -5,6 +5,8 @@
   "type": "module",
   "license": "MIT",
   "dependencies": {
+    "@jamescoyle/vue-icon": "^0.1.2",
+    "@mdi/js": "^6.5.95",
     "@popperjs/core": "^2.11.2",
     "@vitejs/plugin-vue": "^2.2.2",
     "axios": "^0.26.0",
@@ -17,6 +19,7 @@
     "locate-chrome": "^0.1.1",
     "mariadb": "^2.5.6",
     "nodemon": "^2.0.15",
+    "qrcode": "^1.5.0",
     "sass": "^1.49.9",
     "sequelize": "^6.17.0",
     "sqlite3": "^5.0.2",
@@ -32,5 +35,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "nodemonConfig": {
+    "ignore": ["WWebJS/", "ui/", "database.sqlite"]
   }
 }
