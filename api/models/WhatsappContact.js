@@ -13,7 +13,13 @@ WhatsappContact.init({
         defaultValue: DataTypes.UUIDV4
     },
     WhatsappId: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        get() {
+            return JSON.parse(this.getDataValue('WhatsappId'));
+        },
+        set(val) {
+            this.setDataValue('WhatsappId',JSON.stringify(val));
+        }
     },
     name: {
         type: DataTypes.STRING

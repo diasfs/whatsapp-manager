@@ -9,55 +9,89 @@ const executablePath = await locateChrome();
 class WhatsappConnection extends Model {
     #client;
     qr;
-    status;
+    state;
+    importing = false;
 
     get WhatsappClient() {
         if (!this.#client) {
             this.#client = new Client({
                 puppeteer: {
-                    executablePath
+                    executablePath,
+                    headless: false
                 },
                 clientId: this.id
             });
-            this.#client.on('qr', qr => {
+            this.#client.on('qr', async qr => {                
+                this.state = 'DISCONNECTED';
                 this.qr = qr;
             });
-            this.#client.on('ready', () => {
-                console.log('ready');
+            this.#client.on('ready', async () => {                
+                this.state = await this.#client.getState();
             })
             this.#client.on('auth_failure', err => {
-                console.log('auth_failure', err);
+                this.state = 'DISCONNECTED';
             });
-            this.#client.on('authenticated', session => {
-                console.log('authenticated', session);
-            });
-            this.#client.on('change_state', state => {
-                console.log('change_state', state);
+            this.#client.on('change_state', state => {                
                 this.state = state;
             });
-            this.#client.on('disconnected', reason => {
-                console.log('disconnected', reason);
+            this.#client.on('disconnected', reason => {                
+                this.state = 'DISCONNECTED';
             });
-            this.#client.on('message', message => {
-                console.log('message', message);
-            });
-            this.#client.on('message_ack', (message, ack) => {
-                console.log('message ack', message, ack);
-            });
-            this.#client.on('message_create', message => {
-                console.log('message_create', message);
-            });
-            this.#client.on('message_revoke_everyone', (message, revoked_msg) => {
-                console.log('message_revoke_everyone', message, revoked_msg);
-            });
-            this.#client.on('message_revoke_me', message => {
-                console.log('message_revoke_me', message);
-            })
             this.#client.initialize();
         }
         return this.#client;
     }
 
+    async logout() {
+        if (!this.#client) {
+            return;
+        }
+        await this.#client.logout();
+        this.#client = null;
+    }
+
+    async disconnect() {
+        await this.#client.destroy();
+        this.#client = null;
+        this.state = 'DISCONNECTED';
+    }
+
+    async getContacts() {        
+        let client = this.WhatsappClient;
+        if (this.state != 'CONNECTED') {
+            return [];
+        }
+
+        let rows = await client.getContacts();
+        let contacts = [];
+        for(let row of rows) {
+            let about = await row.getAbout();
+            let profilePictureUrl = '';
+            try {
+                profilePictureUrl = await row.getProfilePicUrl();
+            } catch (err) {
+                console.log(err.message, row.name, row.pushname);
+            }
+            let number = await row.getFormattedNumber();
+            let contact = new WhatsappContact({
+                about,
+                profilePictureUrl,
+                WhatsappId: row.id,
+                isBlocked: row.isBlocked,
+                isBusinesss: row.isBusiness,
+                isEnterprise: row.isEnterprise,
+                isGroup: row.isGroup,
+                isUser: row.isUser,
+                isWaContact: row.isWaContact,
+                name: row.name,
+                number: number,
+                pushname: row.pushname,
+                shortName: row.shortName
+            });
+            contacts.push(contact);
+        }
+        return contacts;
+    }
 }
 
 WhatsappConnection.init({
@@ -73,8 +107,14 @@ WhatsappConnection.init({
     pushname: {
         type: DataTypes.STRING
     },
-    wid: {
-        type: DataTypes.STRING
+    wid: {        
+        type: DataTypes.STRING,
+        get() {
+            return JSON.parse(this.getDataValue('wid'));
+        },
+        set(val) {
+            this.setDataValue('wid',JSON.stringify(val));
+        }
     }
 }, {
     timestamps: true,

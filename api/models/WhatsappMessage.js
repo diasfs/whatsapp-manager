@@ -47,19 +47,19 @@ WhatsappMessage.init({
     wid: {
         type: DataTypes.STRING,
         get() {
-            return json_decode(this.getDataValue('wid'));
+            return JSON.parse(this.getDataValue('wid'));
         },
         set(val) {
-            this.setDataValue('wid', json_encode(val));
+            this.setDataValue('wid', JSON.stringify(val));
         }
     },
     inviteV4: {
         type: DataTypes.STRING,
         get() {
-            return json_decode(this.getDataValue('inviteV4'));
+            return JSON.parse(this.getDataValue('inviteV4'));
         },
         set(val) {
-            this.setDataValue('inviteV4',json_encode(val));
+            this.setDataValue('inviteV4',JSON.stringify(val));
         }
     },
     isEphemeral: {
