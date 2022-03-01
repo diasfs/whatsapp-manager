@@ -3,8 +3,10 @@ import dotenv from 'dotenv';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { connection } from './models/index.js'
+import AuthMiddleware from './middlewares/auth.js';
 
 import UserRouter from './routes/user.js';
+import WhatsappRouter from './routes/whatsapp.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootdir = dirname(__dirname);
@@ -25,7 +27,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/user', UserRouter);
-
+app.use('/api/whatsapp', AuthMiddleware, WhatsappRouter);
 
 const PORT = process.env.PORT||3000
 const HOST = process.env.HOST||'0.0.0.0'
