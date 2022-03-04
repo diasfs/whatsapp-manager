@@ -2,7 +2,13 @@
     <slot></slot>
 </template>
 <style lang="less">
+html {
+    height: 100%;
+}
 html,
+body {
+    /*height: 100%;*/
+}
 body {
     height: 100%;
 }
@@ -12,8 +18,6 @@ body[data-page=login],
 body[data-page=forgoten] {
     display: flex;
     align-items: center;
-    padding-top: 40px;
-    padding-bottom: 40px;
     background-color: #f5f5f5;
     #app {
         width: 100%;

@@ -47,7 +47,11 @@ WhatsappMessage.init({
     wid: {
         type: DataTypes.STRING,
         get() {
-            return JSON.parse(this.getDataValue('wid'));
+            try {
+                return JSON.parse(this.getDataValue('wid'));
+            } catch (err) {
+                return null;
+            }
         },
         set(val) {
             this.setDataValue('wid', JSON.stringify(val));
@@ -56,7 +60,12 @@ WhatsappMessage.init({
     inviteV4: {
         type: DataTypes.STRING,
         get() {
-            return JSON.parse(this.getDataValue('inviteV4'));
+            try {
+                return JSON.parse(this.getDataValue('inviteV4'));            
+            } catch (err) {
+                return null;
+            }
+
         },
         set(val) {
             this.setDataValue('inviteV4',JSON.stringify(val));

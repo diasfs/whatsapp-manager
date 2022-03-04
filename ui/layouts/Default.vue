@@ -26,8 +26,11 @@
 </script>
 <style lang="less" >
     #app {
-        height: 100%;
+        min-height: 100%;
         background-color: var(--bs-gray-200);
     }
-    
+    html, body {
+        height: 100%!important;
+        min-height: 100%!important;
+    }
 </style>

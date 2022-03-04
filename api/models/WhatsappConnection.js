@@ -1,8 +1,32 @@
 import { Model, DataTypes } from 'sequelize';
 import { connection as sequelize } from './sequelize.js';
 import WhatsappContact from './WhatsappContact.js';
-import { Client } from "whatsapp-web.js";
+import { Client as Client2 } from "whatsapp-web.js";
+import LocalAuth from 'whatsapp-web.js/src/authStrategies/LocalAuth.js';
+
 import locateChrome from 'locate-chrome';
+
+class Client extends Client2 {
+    async getProfilePicUrl(contactId) {
+        const profilePic = await this.pupPage.evaluate(async (contactId) => {
+            const chatWid = window.Store.WidFactory.createWid(contactId);
+            let asyncPic = await window.Store.getProfilePicFull(chatWid).catch(
+                () => {
+                    return undefined;
+                }
+            );
+            if (!asyncPic) {
+                asyncPic = await window.Store.Wap.profilePicFind(
+                    contactId
+                ).catch(() => {
+                    return undefined;
+                });
+            }
+            return asyncPic;
+        }, contactId);
+        return profilePic ? profilePic.eurl : undefined;
+    }
+}
 
 const executablePath = await locateChrome();
 
@@ -19,7 +43,10 @@ class WhatsappConnection extends Model {
                     executablePath,
                     headless: false
                 },
-                clientId: this.id
+                authStrategy: new LocalAuth({
+                    clientId: this.id,
+                    dataPath: './WWebJS/'
+                })
             });
             this.#client.on('qr', async qr => {                
                 this.state = 'DISCONNECTED';
@@ -62,35 +89,7 @@ class WhatsappConnection extends Model {
             return [];
         }
 
-        let rows = await client.getContacts();
-        let contacts = [];
-        for(let row of rows) {
-            let about = await row.getAbout();
-            let profilePictureUrl = '';
-            try {
-                profilePictureUrl = await row.getProfilePicUrl();
-            } catch (err) {
-                console.log(err.message, row.name, row.pushname);
-            }
-            let number = await row.getFormattedNumber();
-            let contact = new WhatsappContact({
-                about,
-                profilePictureUrl,
-                WhatsappId: row.id,
-                isBlocked: row.isBlocked,
-                isBusinesss: row.isBusiness,
-                isEnterprise: row.isEnterprise,
-                isGroup: row.isGroup,
-                isUser: row.isUser,
-                isWaContact: row.isWaContact,
-                name: row.name,
-                number: number,
-                pushname: row.pushname,
-                shortName: row.shortName
-            });
-            contacts.push(contact);
-        }
-        return contacts;
+        return await client.getContacts();        
     }
 }
 
@@ -110,7 +109,11 @@ WhatsappConnection.init({
     wid: {        
         type: DataTypes.STRING,
         get() {
-            return JSON.parse(this.getDataValue('wid'));
+            try {
+                return JSON.parse(this.getDataValue('wid'));
+            } catch (err) {
+                return null;
+            }
         },
         set(val) {
             this.setDataValue('wid',JSON.stringify(val));

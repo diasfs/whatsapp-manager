@@ -51,7 +51,7 @@ export default {
 
                 SessionStorage.setItem('access_token', access_token);
 
-                this.$router.replace('/');
+                this.$router.replace('/crm');
             } catch (err) {
                 let text = err.message;
                 if (err.response && err.response.data) {

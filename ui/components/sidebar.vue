@@ -5,20 +5,29 @@
                 <div class="bg-secondary py-2 rounded-top"></div>
             </div>
             <ul class="nav flex-column">
+
                 <li class="nav-item">
-                    <a class="nav-link text-secondary active" href="#">Início</a>
+                    <router-link class="nav-link text-secondary" to="/">Início</router-link>
                 </li>
+                <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Atendimento</a>
                 </li>
+                -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#">CRM</a>
+                    <router-link to="/crm" class="nav-link"  active-class="active">Contatos</router-link>
                 </li>
+                <li class="nav-item">
+                    <router-link to="/mensagens" class="nav-link"  active-class="active">Mensagens</router-link>
+                </li>
+                <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Funil</a>
                 </li>
+                -->
             </ul>
 
+            <!--
             <h6
                 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
             >
@@ -33,7 +42,7 @@
                     <a class="nav-link" href="#">Mensagens enviadas</a>
                 </li>
             </ul>
-
+            -->
             <h6
                 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
             >
@@ -41,12 +50,15 @@
             </h6>
 
             <ul class="nav flex-column mb-2">
+                <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Grupos do WhatsApp</a>
                 </li>
+                -->
                 <li class="nav-item">                    
                     <router-link class="nav-link" active-class="active" to="/importar/whatsapp/contatos">Contatos do WhatsApp</router-link>
                 </li>
+                <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Contatos de Conversas do WhatsApp</a>
                 </li>
@@ -56,6 +68,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">Importar CSV</a>
                 </li>
+                -->
             </ul>
 
             <h6
@@ -65,24 +78,39 @@
             </h6>
 
             <ul class="nav flex-column mb-2">
+                <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Minhas Tags</a>
                 </li>
+                -->
                 <li class="nav-item">
                     <router-link class="nav-link" active-class="active" to="/configuracoes/whatsapp">WhatsApp</router-link>
                 </li>
+                <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Trocar Senha</a>
                 </li>
+                -->
             </ul>
             <ul class="nav flex-column mb-2">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Sair</a>
+                    <a class="nav-link" @click="logout" href="javascript:void(0)">Sair</a>
                 </li>
             </ul>
         </div>
     </nav>
 </template>
+<script>
+import SessionStorage from '../lib/session-storage';
+export default {
+    methods: {
+        logout() {
+            SessionStorage.removeItem('access_token');
+            this.$router.replace('/login');
+        }
+    }
+}
+</script>
 <style lang="less" >
 .sidebar {
     position: fixed;

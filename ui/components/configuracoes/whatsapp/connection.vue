@@ -19,7 +19,7 @@
                     :path="icons.whatsapp"
                     size="1.25em"
                 ></svg-icon>
-                {{ phoneNumber }}
+                {{ connection.Contact.number }}
             </p>
         </div>
         <div class="d-flex justify-content-md-start justify-content-center">
@@ -97,7 +97,12 @@ export default {
                 text: "Carregando..."
             });
             let access_token = SessionStorage.getItem('access_token');
-            const events = new EventSource(`${location.origin}/api/whatsapp/conexao/${this.connection.id}/reconectar?access_token=${access_token}`)
+            let events;
+            if (import.meta.env.DEV) {
+                events = new EventSource(`${import.meta.env.VITE_API_ENDPOINT}/whatsapp/conexao/${this.connection.id}/reconectar?access_token=${access_token}`)
+            } else {
+                events = new EventSource(`${location.origin}/api/whatsapp/conexao/${this.connection.id}/reconectar?access_token=${access_token}`)
+            }
 
             events.addEventListener('message', async event => {
                 const data = JSON.parse(event.data);
@@ -126,7 +131,23 @@ export default {
                 confirmButtonText: "Sim",
                 cancelButtonText: "Não",
             });
-            alert(isConfirmed);
+            if (!isConfirmed) {
+                return;
+            }
+            try {
+                await api.delete(`/whatsapp/conexao/${this.connection.id}`);
+                this.$emit('disconnected');
+            } catch (err) {
+                let text = 'Não foi possível excluir o número, por favor, tente novamente mais tarde.';
+                if (err.response && err.response.data) {
+                    text = err.response.data.error;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text
+                });
+            }
         },
         async desconectar() {
             let { isConfirmed } = await Swal.fire({

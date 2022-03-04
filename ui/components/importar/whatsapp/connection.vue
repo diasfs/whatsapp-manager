@@ -2,28 +2,33 @@
     <div class="text-muted py-3 border-bottom">
         <div class="d-flex mb-2">
             <img
-                :src="connection.Contact.profilePictureUrl"
+                :src="Connection.Contact.profilePictureUrl"
                 width="48"
                 height="48"
                 class="me-3 rounded-circle"
                 v-if="
-                    connection.Contact && connection.Contact.profilePictureUrl
+                    Connection.Contact && Connection.Contact.profilePictureUrl
                 "
             />
             <p class="pb-3 mb-0 small lh-sm">
                 <strong class="d-block text-gray-dark">{{
-                    connection.pushname
+                    Connection.pushname
                 }}</strong>
                 <svg-icon
                     type="mdi"
                     :path="icons.whatsapp"
                     size="1.25em"
                 ></svg-icon>
-                {{ phoneNumber }}
+                {{ Connection.Contact.number }}
             </p>
         </div>
         <div class="d-flex justify-content-md-start justify-content-center">
-            <button disabled @click="reconectar" v-if="connection.state == 'DISCONNECTED'" class="btn bg-warning text-white btn-sm mx-1">
+            <button
+                disabled
+                @click="reconectar"
+                v-if="Connection.state == 'DISCONNECTED'"
+                class="btn bg-warning text-white btn-sm mx-1"
+            >
                 <svg-icon
                     type="mdi"
                     :path="icons.connection"
@@ -35,7 +40,7 @@
             <button
                 @click="importar"
                 class="btn bg-primary text-white btn-sm mx-1"
-                v-if="connection.state=='CONNECTED' && !connection.importing"
+                v-if="Connection.state == 'CONNECTED' && !Connection.importing"
             >
                 <svg-icon
                     type="mdi"
@@ -47,14 +52,14 @@
             <button
                 disabled
                 class="btn bg-primary text-white btn-sm mx-1"
-                v-if="connection.importing"
+                v-if="Connection.importing"
             >
                 <svg-icon
                     type="mdi"
                     :path="icons.import"
                     size="1.25em"
                 ></svg-icon>
-                Importando...
+                Importando ({{ Connection.import_percentual }}%)
             </button>
         </div>
     </div>
@@ -62,11 +67,9 @@
 <script>
 import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiConnection, mdiWhatsapp, mdiDatabaseImportOutline } from "@mdi/js";
-import Swal from 'sweetalert2';
-import 'sweetalert2/src/sweetalert2.scss';
-import api from '../../../lib/api';
-
-
+import Swal from "sweetalert2";
+import "sweetalert2/src/sweetalert2.scss";
+import api from "../../../lib/api";
 
 export default {
     props: ["connection"],
@@ -75,6 +78,7 @@ export default {
     },
     data() {
         return {
+            Connection: this.connection,
             icons: {
                 connection: mdiConnection,
                 import: mdiDatabaseImportOutline,
@@ -84,21 +88,61 @@ export default {
     },
     computed: {
         phoneNumber() {
-            return this.connection.wid.user.replace(
+            return this.Connection.wid.user.replace(
                 /(\d{2})(\d{2})(\d{4,5})(\d{4})/,
                 "$1 ($2) $3-$4"
             );
         },
     },
+    mounted() {
+        this.reloadTimer = setTimeout(() => {
+            this.reloadConnection();
+        }, 2000);
+    },
+    umounted() {
+        if (this.reloadTimer) {
+            clearTimeout(this.reloadTimer);
+        }
+    },
     methods: {
-       async importar() {
-           try {
-               let contacts = await api.post(`/whatsapp/conexao/${this.connection.id}/importar-contatos`);
-               console.log(contacts);
-           } catch (err) {
-               console.log(err);
-           }
-       }
+        async importar() {
+            try {                
+                this.Connection.importing = true;
+                await api.post(
+                    `/whatsapp/conexao/${this.Connection.id}/importar-contatos`
+                );
+                Swal.fire({
+                    title: "Importado!",
+                    icon: "success",
+                    text: "Os contatos do seu WhatsApp foram importados.",
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        async reloadConnection() {
+            try {
+                
+                let { data: connection } = await api.get(
+                    `/whatsapp/conexao/${this.connection.id}`
+                );
+                this.Connection = connection;
+                this.reloadTimer = setTimeout(() => {
+                    this.reloadConnection();
+                }, 5000);
+            } catch (err) {
+                console.log(err);
+            }
+        },
+        watch: {
+            connection: {
+                immediate: true,
+                handler(newValue) {
+                    this.Connection = newValue;
+                },
+                deep: true,
+            },
+        }
     },
 };
 </script>

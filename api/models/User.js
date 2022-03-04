@@ -2,8 +2,10 @@ import { Model, DataTypes } from 'sequelize';
 import bcrypt from 'bcrypt';
 import { connection as sequelize } from './sequelize.js';
 import Contact from './Contact.js';
+import ContactList from './ContactList.js';
 import Tag from './Tag.js';
 import WhatsappConnection from './WhatsappConnection.js';
+import Transmission from './Transmission.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
@@ -56,5 +58,11 @@ User.hasMany(User);
 
 WhatsappConnection.belongsTo(User);
 User.hasMany(WhatsappConnection);
+
+ContactList.belongsTo(User);
+User.hasMany(ContactList);
+
+Transmission.belongsTo(User);
+User.hasMany(Transmission);
 
 export default User;

@@ -59,7 +59,9 @@ Contact.init({
 
 Contact.hasOne(Address);
 Contact.hasOne(WhatsappContact);
-Contact.hasMany(Tag);
+
+Contact.belongsToMany(Tag, { through: 'ContactTags' });
+Tag.belongsToMany(Contact, { through: 'ContactTags' });
 
 
 export default Contact;

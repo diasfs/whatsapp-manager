@@ -17,7 +17,7 @@
                 <p>Nenhum número disponível.</p>
             </div>
             <div v-if="connections.length > 0">
-                <Connection @authenticated="loadConnections" @disconnected="loadConnections" v-for="connection in connections" :key="connection.id" :connection="connection"></Connection>
+                <Connection @importando="loadConnections" v-for="connection in connections" :key="connection.id" :connection="connection"></Connection>
             </div>
         </div>
     </main>
@@ -43,7 +43,7 @@ export default {
                 whatsapp: mdiWhatsapp
             },
             carregando: false,
-            connections: null
+            connections: []
         };
     },
     created() {

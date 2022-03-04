@@ -19,7 +19,7 @@
             <div v-if="connections.length > 0">
                 <Connection @authenticated="loadConnections" @disconnected="loadConnections" v-for="connection in connections" :key="connection.id" :connection="connection"></Connection>
             </div>
-
+            
             <small class="d-flex justify-content-md-end justify-content-center  mt-3">
                 <button @click="novaConexao" class="btn btn-primary btn-sm text-white">
                     <svg-icon type="mdi" :path="icons.whatsapp" size="1.5em"></svg-icon>
@@ -52,11 +52,11 @@ export default {
                 whatsapp: mdiWhatsapp
             },
             carregando: false,
-            connections: null
+            connections: []
         };
     },
     created() {
-        this.loadConnections();
+        this.loadConnections();        
     },
     methods: {
         async loadConnections() {
@@ -76,10 +76,19 @@ export default {
         },
         async novaConexao() {
             let swal = Swal.fire({                
-                text: "Carregando..."
+                text: "Carregando...",
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: "Cancelar",
             });
             let access_token = SessionStorage.getItem('access_token');
-            const events = new EventSource(`${location.origin}/api/whatsapp/conexoes/nova?access_token=${access_token}`)
+            let events;
+            if (import.meta.env.DEV) {
+                events = new EventSource(`${import.meta.env.VITE_API_ENDPOINT}/whatsapp/conexoes/nova?access_token=${access_token}`)
+            } else {
+                events = new EventSource(`${location.origin}/api/whatsapp/conexoes/nova?access_token=${access_token}`)
+            }
+            
 
             events.addEventListener('message', async event => {
                 const data = JSON.parse(event.data);
@@ -87,8 +96,9 @@ export default {
                 let url = await QRCode.toDataURL(qr);
                 
                 swal.update({
-                    imageUrl: url,
-                    text: null
+                    //imageUrl: url,
+                    text: null,
+                    html: `<img src="${url}" />`,
                 });
             });
             events.addEventListener('authenticated', async event => {
@@ -99,6 +109,8 @@ export default {
 
             await swal;
             events.close();
+            events = null;
+            console.log('closing');
         }
     }
 };
