@@ -15,7 +15,7 @@ router.beforeEach(async (to, from) => {
         }
     } else if (access_token && ['login', 'forgoten', 'register'].includes(to.name)) {
         return {
-            name: 'index'
+            name: 'crm'
         }
     }
     document.body.setAttribute('data-page', to.name);

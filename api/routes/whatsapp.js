@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import MessageMedia from "whatsapp-web.js/src/structures/MessageMedia.js";
+import { Connections, Events as ConnectionsEvents } from '../connections.js';
 
 import {
     WhatsappConnection as WhatsappConnectionModel,
@@ -10,7 +11,7 @@ import {
 } from "../models/index.js";
 
 const router = new Router();
-let Connections = {};
+
 
 WhatsappConnectionModel.findAll({
     include: "WhatsappContact",
@@ -34,6 +35,7 @@ WhatsappConnectionModel.findAll({
         Connections[connection.UserId].push(connection);
     }
     console.log(Connections);
+    ConnectionsEvents.emit('updated');
 });
 
 router.get("/conexoes", async (req, res) => {
@@ -214,6 +216,8 @@ router.get("/conexoes/nova", async (req, res) => {
             Connections[req.userId] = [];
         }
         Connections[req.userId].push(connection);
+        ConnectionsEvents.emit('updated');
+        ConnectionsEvents.emit('new_connection', connection);
 
         ready = true;
         res.write(
@@ -328,6 +332,8 @@ router.delete("/conexao/:id", async (req, res) => {
 
     await connection.logout();
     connection.destroy();
+    ConnectionsEvents.emit('updated');
+    ConnectionsEvents.emit('connection_removed', connection);
     res.json({
         message: "conexão removida com sucesso."
     })
@@ -393,7 +399,9 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
                         row.verifiedName || 
                         ''
                     ).split(/\s+/gim);
-                    sobrenome = sobrenome.join(" ");
+                    if ('string' != typeof sobrenome) {
+                        sobrenome = sobrenome.join(" ");
+                    }
 
                 } catch (err) {
                     console.log(err.message, row);

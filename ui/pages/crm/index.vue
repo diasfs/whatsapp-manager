@@ -62,18 +62,55 @@ export default {
                 whatsapp: mdiWhatsapp
             },
             carregando: false,
-            contatos: []
+            Contatos: []
         };
     },
     created() {
         this.loadContatos();
+    },
+    computed: {
+        contatos() {
+            let contatos = [...this.Contatos];
+
+
+            contatos.sort((a,b) => {
+                let nome_completo_a = `${a.nome} ${a.sobrenome}`.trim();
+                let nome_completo_b = `${b.nome} ${b.sobrenome}`.trim();
+                if (nome_completo_a == '' && nome_completo_b == '' ) {
+                    if (a.WhatsappContact && b.WhatsappContact) {
+                        if (a.WhatsappContact.profilePictureUrl != '' && b.WhatsappContact.profilePictureUrl == '') {
+                            return -1;
+                        }
+                        if (a.WhatsappContact.profilePictureUrl == '' && b.WhatsappContact.profilePictureUrl != '') {
+                            return 1;
+                        }
+                    }
+                    if (a.WhatsappContact && !b.WhatsappContact) {
+                        return -1;
+                    }
+                    if (!a.WhatsappContact && b.WhatsappContact) {
+                        return 1;
+                    }
+                    return a.celular < b.celular ? - 1 : 1;
+                }
+                if (nome_completo_a == '' && nome_completo_b != '') {
+                    return 1;
+                }
+                if (nome_completo_a != '' && nome_completo_b == '') {
+                    return -1;
+                }
+                return nome_completo_a < nome_completo_b ? - 1 : 1;
+            })
+
+            return contatos;
+        }
     },
     methods: {
         async loadContatos() {
             try {
                 this.carregando = true;
                 let {data: contatos} = await api.get('/crm/contatos');
-                this.contatos = contatos
+                this.Contatos = contatos
             } catch (err) {
 
             }

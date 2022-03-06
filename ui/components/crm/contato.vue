@@ -14,8 +14,10 @@
                 "
             />
         </td>
-        <td>
-            {{ contact.nome }} {{ contact.sobrenome }}<br />
+        <td>            
+            {{ contact.nome }} {{ contact.sobrenome }} 
+          
+            <br  v-if="contact.nome != '' || contact.sobrenome != ''" />
             {{ contact.celular }}
         </td>
         <td>

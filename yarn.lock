@@ -3124,6 +3124,11 @@ undefsafe@^2.0.5:
   resolved "https://registry.yarnpkg.com/undefsafe/-/undefsafe-2.0.5.tgz#38733b9327bdcd226db889fb723a6efd162e6e2c"
   integrity sha512-WxONCrssBM8TSPRqN5EmsjVrsv4A8X12J4ArBiiayv3DyyG3ZlIg6yysuuSYdZsVz3TKcTg2fd//Ujd4CHV1iA==
 
+unicode-emoji@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/unicode-emoji/-/unicode-emoji-2.3.0.tgz#3793c9177bf2fe838b0ef5c381bb7eeb8035a330"
+  integrity sha512-XfgzxY9hUAXlZdkR8X+QdeQ4yV9gUs6qVYDncBiJiCEJ74mhVxEEdXz2slZU9ahQGUscKO1Aqo6PGLTu4Cgb7g==
+
 unique-string@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/unique-string/-/unique-string-2.0.0.tgz#39c6451f81afb2749de2b233e3f7c5e8843bd89d"

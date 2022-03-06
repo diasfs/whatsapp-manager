@@ -123,20 +123,31 @@
                 </ul>
             </div>
         </div>
-
-        <div class="my-3 p-1 bg-body rounded shadown-sm" style="width: 500px">
-            <form @submit.prevent.stop="salvar" class="position-relative">
-                <!--
-                    <textarea
-                    type="text"
-                    class="form-control rounded border-0"
-                    rows="5"
-                    placeholder="Escreva sua mensagem"
-                    v-model="template"
-                ></textarea>
-                -->
-                <div ref="editorjs" class="border bg-body"></div>
-            </form>
+        <div class="d-flex justify-content-between">
+            <div class="my-3 p-1 bg-body rounded shadown-sm" style="width: 500px">
+                <form @submit.prevent.stop="salvar" class="position-relative">
+                    <!--
+                        <textarea
+                        type="text"
+                        class="form-control rounded border-0"
+                        rows="5"
+                        placeholder="Escreva sua mensagem"
+                        v-model="template"
+                    ></textarea>
+                    -->
+                    <div ref="editorjs" class="border bg-body"></div>
+                </form>
+            </div>
+            <div class="bg-body p-3 mx-4 emoji-list" style="flex:1">
+                <ul class="nav emoji-nav">
+                    <li class="nav-item" :class="{active: title == emoji_category}" v-for="({ title }) in emojiGroups" :key="title" @click="emoji_category=title">
+                        <a href="javascript:void(0)" class="nav-link" >{{ title }}</a>
+                    </li>
+                </ul>
+                <div class="emoji-list-content">
+                    <a @click.prevent.stop="() => insertEmoji(emoji.emoji)" v-for="emoji in emojis" :key="emoji.emoji" href="javascript:void(0)" class="emoji text-decoration-none"><span>{{ emoji.emoji }}</span></a>                    
+                </div>
+            </div>
         </div>
 
         <div class="my-5 text-end">
@@ -163,6 +174,9 @@ import EditorJS from "@editorjs/editorjs";
 import ImageTool from "@editorjs/image";
 import AttachesTool from "@editorjs/attaches";
 
+import * as unicodeEmoji from 'unicode-emoji'
+
+
 export default {
     components: {
         SvgIcon,
@@ -176,6 +190,8 @@ export default {
             transmission: null,
             template: "",
             editor: null,
+            emojiGroups: [],
+            emoji_category: '🙂'
         };
     },
     computed: {
@@ -185,9 +201,52 @@ export default {
             }
             return this.transmission.Contacts;
         },
+        emojis() {
+            let groups = this.emojiGroups;
+            let group = groups.find(({ title }) => title == this.emoji_category);
+            if (!group) {
+                return []
+            };
+            return group.emojis;
+        }
     },
     created() {
         this.loadTransmission();
+        let emojis = unicodeEmoji.getEmojisGroupedBy('category', {versionAbove: '12.0'});
+        this.emojiGroups = [
+            {
+                title: '🙂',
+                emojis: [...emojis['face-emotion'], ...emojis['person-people']]
+            },
+            {
+                title: '🐻',
+                emojis: emojis['animals-nature'],                
+            },
+            {
+                title: '☕',
+                emojis: emojis['food-drink']
+            },
+            {
+                title: '⚽',
+                emojis: emojis['activities-events']
+            },
+            {
+                title: '🚘',
+                emojis: emojis['travel-places']
+            },
+            {
+                title: '💡',
+                emojis: emojis['objects']
+            },
+            {
+                title: '#️⃣',
+                emojis: emojis['symbols']
+            },
+            {
+                title: '🏳️',
+                emojis: emojis['flags']
+            }
+        ]
     },
     mounted() {
         let access_token = SessionStorage.getItem("access_token");
@@ -213,6 +272,18 @@ export default {
         });
     },
     methods: {
+        insertEmoji(emoji) {       
+            let selection = window.getSelection();
+            let range = selection.getRangeAt(0);
+            range.deleteContents();
+            let node = document.createTextNode(emoji);
+            range.insertNode(node);
+
+            for(let position = 0; position != emoji.length; position++)
+            {
+                selection.modify("move", "right", "character");
+            };          
+        },
         async loadTransmission() {
             try {
                 let transmission_id = this.$route.params.id;
@@ -354,5 +425,23 @@ export default {
     margin-top: 1em;
     border-radius: 1em;
     border-top-right-radius: 0;
+}
+.emoji-list {
+    .emoji-list-content {
+        overflow-y: auto;
+        max-height: 300px;
+
+    }
+    display: inline-block;
+    max-width: 50%;
+}
+a.emoji {
+    font-size: 24px;
+}
+.emoji-nav {
+    .active {
+        background-color: var(--bs-gray-200);
+
+    }
 }
 </style>

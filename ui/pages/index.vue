@@ -18,8 +18,11 @@
             if (!access_token) {
                 return this.$router.replace('/login')
             }
+            /*
             let { data } = await api.get('/user');
             console.log(data)
+            */
+           this.$router.replace('/crm')
         }
     }
 </script>
