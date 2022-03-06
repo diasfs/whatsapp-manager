@@ -40,8 +40,10 @@ class WhatsappConnection extends Model {
         if (!this.#client) {
             this.#client = new Client({
                 puppeteer: {
+                    /*
                     executablePath,
                     headless: false
+                    */
                 },
                 authStrategy: new LocalAuth({
                     clientId: this.id,
