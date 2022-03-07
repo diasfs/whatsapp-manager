@@ -11,14 +11,13 @@ import WhatsappRouter from './routes/whatsapp.js';
 import CRMRouter from './routes/crm.js';
 import TransmissionRouter from './routes/transmission.js';
 
+dotenv.config();
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootdir = dirname(__dirname);
 const __publicdir = path.join(__rootdir,'public');
-const __uploaddir = path.join(__rootdir,'uploads');
+const __uploaddir = process.env.UPLOAD_DIR || path.join(__rootdir,'uploads');
 
-console.log(__uploaddir)
-
-dotenv.config();
 
 const app = express();
 

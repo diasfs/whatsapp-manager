@@ -14,7 +14,7 @@ import TransmissionContacts from './TransmissionContacts.js';
 
 //await connection.sync({ force :true});
 //await connection.sync({ alter :true});
-//await connection.sync();
+await connection.sync();
 
 export {
     Address,

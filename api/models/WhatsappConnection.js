@@ -47,7 +47,7 @@ class WhatsappConnection extends Model {
                 },
                 authStrategy: new LocalAuth({
                     clientId: this.id,
-                    dataPath: './WWebJS/'
+                    dataPath: process.env.PUPPETER_DATA_PATAH||'./WWebJS/'
                 })
             });
             this.#client.on('qr', async qr => {                
