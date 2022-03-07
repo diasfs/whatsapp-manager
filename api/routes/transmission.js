@@ -121,7 +121,8 @@ router.post('/:id/upload', upload.fields([{name: 'image', maxCount: 1}, { name: 
             success: 1,
             file: {
                 ...file,
-                url: `${req.protocol}://${req.hostname}:${process.env.PORT}/${file.path}`,
+                //url: `${req.protocol}://${req.hostname}:${process.env.PORT}/${file.path}`,
+                url: `${req.header('Origin')}/${file.path}`,
                 title: file.originalname
             }
         })
