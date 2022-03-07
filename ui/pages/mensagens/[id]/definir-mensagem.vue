@@ -136,6 +136,28 @@
                     ></textarea>
                     -->
                     <div ref="editorjs" class="border bg-body"></div>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a href="" class="nav-link">
+                                <span class="badge bg-primary"  @click.prevent.stop="() => insertVariable('Nome', '{{ nome }}')">Nome</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="" class="nav-link">
+                                <span class="badge bg-primary"  @click.prevent.stop="() => insertVariable('Sobrenome', '{{ sobrenome }}')">Sobrenome</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="" class="nav-link"  @click.prevent.stop="() => insertVariable('Telefone', '{{ telefone }}')">
+                                <span class="badge bg-primary">Telefone</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="" class="nav-link" @click.prevent.stop="() => insertVariable('Celular', '{{ celular }}')">
+                                <span class="badge bg-primary">Celular</span>
+                            </a>
+                        </li>
+                    </ul>
                 </form>
             </div>
             <div class="bg-body p-3 mx-4 emoji-list" style="flex:1">
@@ -272,6 +294,30 @@ export default {
         });
     },
     methods: {
+        async insertVariable(text, field) {
+            let selection = window.getSelection();
+            let range = selection.getRangeAt(0);
+            range.deleteContents();
+            //let node = document.createTextNode(emoji);
+            let span = document.createElement('span');
+            span.innerHTML = text;
+            span.classList.add('badge', 'bg-dark', 'text-uppercase')
+            span.setAttribute('field', field);
+            span.contentEditable = false;
+            let textNode = document.createElement("span")
+            textNode.innerHTML = '&nbsp;';            
+            range.insertNode(textNode);
+            
+            range.insertNode(span);
+            
+
+            for(let position = 0; position != text.length + 1; position++)
+            {
+                selection.modify("move", "right", "character");
+            };
+
+            
+        },
         insertEmoji(emoji) {       
             let selection = window.getSelection();
             let range = selection.getRangeAt(0);
