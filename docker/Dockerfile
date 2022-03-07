@@ -18,6 +18,6 @@ VOLUME /data /uploads
 RUN git clone https://github.com/diasfs/whatsapp-manager.git ./
 RUN yarn && yarn build
 
-
-
 EXPOSE 3000
+
+ENTRYPOINT ["yarn", "start:api"]
