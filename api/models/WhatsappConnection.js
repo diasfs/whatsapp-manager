@@ -46,6 +46,12 @@ class WhatsappConnection extends Model {
             this.#client = new Client({
                 puppeteer: {
                     executablePath,
+                    args: [
+                        '--disable-gpu',
+                        '--disable-dev-shm-usage',
+                        '--disable-setuid-sandbox',
+                        '--no-sandbox'
+                    ]
                     /*
                     headless: false
                     */
