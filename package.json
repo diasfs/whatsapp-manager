@@ -39,7 +39,7 @@
     "whatsapp-web.js": "^1.16.2"
   },
   "scripts": {
-    "start:api": "nodemon api/index.js",
+    "start:api": "git pull && yarn && yarn build && nodemon api/index.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
