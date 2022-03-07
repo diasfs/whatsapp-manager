@@ -5,7 +5,7 @@ ENV DB_STORAGE=/data/database.sqlite
 ENV JWT_SECRET=mysecret
 ENV PORT=3000
 ENV UPLOAD_DIR=/uploads
-ENV PUPPETER_DATA_PATAH=/data/WWebJS
+ENV PUPPETER_DATA_PATH=/data/WWebJS
 ENV CHROME_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN apt update && apt install -y chromium
