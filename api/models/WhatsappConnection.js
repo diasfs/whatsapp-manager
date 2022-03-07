@@ -28,7 +28,12 @@ class Client extends Client2 {
     }
 }
 
-const executablePath = await locateChrome();
+let executablePath = null;
+if (process.env.CHROME_EXECUTABLE_PATH) {
+    executablePath = process.env.CHROME_EXECUTABLE_PATH;
+} else if (process.env.LOCATE_CHROME) {
+    executablePath = await locateChrome();
+}
 
 class WhatsappConnection extends Model {
     #client;
