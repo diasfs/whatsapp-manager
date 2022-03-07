@@ -28,7 +28,7 @@ class Client extends Client2 {
     }
 }
 
-//const executablePath = await locateChrome();
+const executablePath = await locateChrome();
 
 class WhatsappConnection extends Model {
     #client;
@@ -40,8 +40,8 @@ class WhatsappConnection extends Model {
         if (!this.#client) {
             this.#client = new Client({
                 puppeteer: {
-                    /*
                     executablePath,
+                    /*
                     headless: false
                     */
                 },
