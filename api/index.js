@@ -1,5 +1,5 @@
 import express from 'express';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { connection } from './models/index.js'
@@ -10,8 +10,9 @@ import UserRouter from './routes/user.js';
 import WhatsappRouter from './routes/whatsapp.js';
 import CRMRouter from './routes/crm.js';
 import TransmissionRouter from './routes/transmission.js';
+import BackupRouter from './routes/backup.js';
+import ContactListRouter from './routes/contact-list.js';
 
-dotenv.config();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const __rootdir = dirname(__dirname);
@@ -20,6 +21,12 @@ const __uploaddir = process.env.UPLOAD_DIR || path.join(__rootdir,'uploads');
 
 
 const app = express();
+
+app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    next();
+})
 
 app.use(cors());
 
@@ -38,6 +45,8 @@ app.use('/api/user', UserRouter);
 app.use('/api/whatsapp', AuthMiddleware, WhatsappRouter);
 app.use('/api/crm', AuthMiddleware, CRMRouter);
 app.use('/api/transmission', AuthMiddleware, TransmissionRouter);
+app.use('/api/contact-list', AuthMiddleware, ContactListRouter);
+app.use('/api/backup', BackupRouter);
 
 const PORT = process.env.PORT||3000
 const HOST = process.env.HOST||'0.0.0.0'

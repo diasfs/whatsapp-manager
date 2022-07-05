@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '~/lib/api';
 import Swal from 'sweetalert2';
 import 'sweetalert2/src/sweetalert2.scss'
 
@@ -47,7 +47,7 @@ export default {
         async signUp() {
             try {
                 this.cadastrando = true;
-                let { data } = await axios.post('/api/user/sign-up', {
+                let { data } = await api.post('user/sign-up', {
                     name: this.name,
                     email: this.email,
                     password: this.password

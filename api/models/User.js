@@ -5,11 +5,9 @@ import Contact from './Contact.js';
 import ContactList from './ContactList.js';
 import Tag from './Tag.js';
 import WhatsappConnection from './WhatsappConnection.js';
+import WhatsappMessage from './WhatsappMessage.js';
 import Transmission from './Transmission.js';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 class User extends Model {
     verifyPassword(password) {
@@ -64,5 +62,8 @@ User.hasMany(ContactList);
 
 Transmission.belongsTo(User);
 User.hasMany(Transmission);
+
+WhatsappMessage.belongsTo(User);
+User.hasMany(WhatsappMessage);
 
 export default User;

@@ -117,7 +117,7 @@ export default {
                     text: "Os contatos do seu WhatsApp foram importados.",
                 });
             } catch (err) {
-                console.log(err);
+                console.error(err);
             }
         },
         async reloadConnection() {
@@ -131,7 +131,7 @@ export default {
                     this.reloadConnection();
                 }, 5000);
             } catch (err) {
-                console.log(err);
+                console.error(err);
             }
         },
         watch: {

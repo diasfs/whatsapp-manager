@@ -1,0 +1,80 @@
+version: '3.8'
+services:
+  proxy:
+    image: nginxproxy/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx/conf.d/custom.conf:/etc/nginx/conf.d/custom.conf
+  redis:
+    image: redis
+    restart: unless-stopped
+
+  db:
+    image: mariadb
+    volumes:
+      - ./mysql/initdb:/docker-entrypoint-initdb.d
+      - ./mysql/data:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: sgt357
+      MARIADB_DATABASE: whatsapp
+  front:
+    image: "node:16"
+    working_dir: /app
+    expose:
+      - "80"
+    volumes:
+      - ./ui:/app/ui
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./vite.config.js:/app/vite.config.js
+    environment:
+      - VITE_API_ENDPOINT=http://whatsapp.localhost/api
+      - VIRTUAL_HOST=whatsapp-ui.localhost
+      - VIRTUAL_PORT=80
+    command: "yarn dev"
+  app:
+    build: ./Docker/backend
+    working_dir: "/app"
+    privileged: true
+    depends_on:
+      - db
+      - redis
+    volumes: 
+      - ./api:/app/api
+      - ./backup:/app/backup
+      - ./public:/app/public
+      - ./uploads:/app/uploads
+      - ./WWebJS:/app/WWebJS
+      - ./package.json:/app/package.json
+      - ./.babelrc:/app/.babelrc
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - node_modules:/app/node_modules
+      - ~/.Xauthority:/root/.Xauthority
+      - ./logs/api:/app/logs/api
+    environment:
+      #- DB_URI=mysql://whatsapp:sgt357@mysql.dias.poa.br/whatsapp
+      - DB_URI=mysql://root:sgt357@db/whatsapp
+      - DB_LOGGING=false
+      - JWT_SECRET=mysecret
+      - PORT=5000
+      - HEADLESS=true
+      - CHROME_EXECUTABLE_PATH=/usr/bin/chromium
+      - DISPLAY=${DISPLAY}
+      - VIRTUAL_HOST=whatsapp.localhost
+      - VIRTUAL_PORT=5000
+    command: "yarn start:api"
+    expose:
+      - "5000"
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    environment:
+      - PMA_ARBITRARY=1
+volumes:
+  node_modules:

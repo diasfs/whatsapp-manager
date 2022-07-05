@@ -23,6 +23,7 @@ router.post('/sign-in', async (req, res) => {
             throw new Error("Cadastro não encontrado.");
         }
         if (!user.verifyPassword(password)) {
+            
             throw new Error("Senha incorreta.");
         }
 
@@ -110,7 +111,7 @@ router.post('/save', AuthMiddleware, async (req, res) =>  {
         user.name = name;
         user.email = email;
         if ('' !== password) {
-            email.password = password;
+            user.password = password;
         }
 
         try {

@@ -1,40 +1,26 @@
 <template>
-    <div class="container">
-        <!--<div
-            class="d-flex align-items-center p-3 my-3 text-white bg-secondary rounded shadow-sm"
-        >
-            <div class="lh-1">
-                <h1 class="h6 mb-0 text-white lh-1">Mensagens</h1>
-                <small>Contatos</small>
-            </div>
-        </div>
-        -->
-
+    <div class="container" >
         <div class="text-end mt-5">
-            <button @click="enviar" class="btn btn-secondary text-white">
+            <button @click="salvar" class="btn btn-primary text-white mx-2">
+                SALVAR
+            </button>
+            <button @click="revisar" class="btn btn-secondary text-white">
                 PRÓXIMA ETAPA
             </button>
         </div>
 
-        <h3>Nova mensagem</h3>
-
         <div class="my-3 p-3 bg-body rounded shadown-sm">
-            <ul class="nav">
-                <li class="nav-item">
-                    <a class="nav-link disabled">Escolher lista</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active">Definir mensagem</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled">Revisar</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled">Enviar</a>
-                </li>
-            </ul>
+            <Nav :transmission_id="$route.params.id" :status="transmission.status" v-if="transmission" />
         </div>
-
+        <h3>Nome da Mensagem</h3>
+        <div class="my-3 p-3 bg-body rounded shadow-sm">
+            <input
+                type="text"
+                v-model="nome"
+                class="w-100 p-2 border bg-light rounded"
+            />
+        </div>
+        <!--
         <h3>Lista</h3>
         <div class="my-3 p-3 bg-body rounded shadow-sm">
             <div class="accordion">
@@ -105,79 +91,146 @@
                 </div>
             </div>
         </div>
+        -->
 
         <div class="d-flex justify-content-between mt-5">
             <h3>Mensagem</h3>
-            <div>
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a
-                            class="nav-link text-secondary"
-                            @click.stop.prevent="adicionarImage"
-                            >Anexar arquivo</a
-                        >
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-secondary">Personalizar</a>
-                    </li>
-                </ul>
-            </div>
         </div>
-        <div class="d-flex justify-content-between">
-            <div class="my-3 p-1 bg-body rounded shadown-sm" style="width: 500px">
-                <form @submit.prevent.stop="salvar" class="position-relative">
-                    <!--
-                        <textarea
-                        type="text"
-                        class="form-control rounded border-0"
-                        rows="5"
-                        placeholder="Escreva sua mensagem"
-                        v-model="template"
-                    ></textarea>
-                    -->
-                    <div ref="editorjs" class="border bg-body"></div>
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a href="" class="nav-link">
-                                <span class="badge bg-primary"  @click.prevent.stop="() => insertVariable('Nome', '{{ nome }}')">Nome</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="" class="nav-link">
-                                <span class="badge bg-primary"  @click.prevent.stop="() => insertVariable('Sobrenome', '{{ sobrenome }}')">Sobrenome</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="" class="nav-link"  @click.prevent.stop="() => insertVariable('Telefone', '{{ telefone }}')">
-                                <span class="badge bg-primary">Telefone</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="" class="nav-link" @click.prevent.stop="() => insertVariable('Celular', '{{ celular }}')">
-                                <span class="badge bg-primary">Celular</span>
-                            </a>
+        <div>
+            <ul class="nav">
+                <li class="nav-item">
+                    <a
+                        class="nav-link text-secondary"
+                        @click.stop.prevent="adicionarImage"
+                        >Anexar arquivo</a
+                    >
+                </li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-lg-6">
+                <div class="my-3 p-1 bg-body rounded shadown-sm w-full">
+                    <form
+                        @submit.prevent.stop="salvar"
+                        class="position-relative"
+                    >
+
+                        <Editor :template="template" :upload_url="upload_url" v-if="template" @ready="ed => this.editor = ed" />
+                        <ul class="nav">
+                            <li class="nav-item">
+                                <a href="" class="nav-link">
+                                    <span
+                                        class="badge bg-primary"
+                                        @click.prevent.stop="
+                                            () =>
+                                                insertVariable(
+                                                    'Nome',
+                                                    '{{ nome }}'
+                                                )
+                                        "
+                                        >Nome</span
+                                    >
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="" class="nav-link">
+                                    <span
+                                        class="badge bg-primary"
+                                        @click.prevent.stop="
+                                            () =>
+                                                insertVariable(
+                                                    'Sobrenome',
+                                                    '{{ sobrenome }}'
+                                                )
+                                        "
+                                        >Sobrenome</span
+                                    >
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a
+                                    href=""
+                                    class="nav-link"
+                                    @click.prevent.stop="
+                                        () =>
+                                            insertVariable(
+                                                'Telefone',
+                                                '{{ telefone }}'
+                                            )
+                                    "
+                                >
+                                    <span class="badge bg-primary"
+                                        >Telefone</span
+                                    >
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a
+                                    href=""
+                                    class="nav-link"
+                                    @click.prevent.stop="
+                                        () =>
+                                            insertVariable(
+                                                'Celular',
+                                                '{{ celular }}'
+                                            )
+                                    "
+                                >
+                                    <span class="badge bg-primary"
+                                        >Celular</span
+                                    >
+                                </a>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+            <div class="col-sm-12 col-lg-6">
+                <div
+                    class="
+                        bg-body
+                        p-3
+                        mx-4
+                        emoji-list
+                        d-sm-none d-lg-block
+                        w-full
+                    "
+                    style="flex: 1"
+                >
+                    <ul class="nav emoji-nav">
+                        <li
+                            class="nav-item"
+                            :class="{ active: title == emoji_category }"
+                            v-for="{ title } in emojiGroups"
+                            :key="title"
+                            @click="emoji_category = title"
+                        >
+                            <a href="javascript:void(0)" class="nav-link">{{
+                                title
+                            }}</a>
                         </li>
                     </ul>
-                </form>
-            </div>
-            <div class="bg-body p-3 mx-4 emoji-list" style="flex:1">
-                <ul class="nav emoji-nav">
-                    <li class="nav-item" :class="{active: title == emoji_category}" v-for="({ title }) in emojiGroups" :key="title" @click="emoji_category=title">
-                        <a href="javascript:void(0)" class="nav-link" >{{ title }}</a>
-                    </li>
-                </ul>
-                <div class="emoji-list-content">
-                    <a @click.prevent.stop="() => insertEmoji(emoji.emoji)" v-for="emoji in emojis" :key="emoji.emoji" href="javascript:void(0)" class="emoji text-decoration-none"><span>{{ emoji.emoji }}</span></a>                    
+                    <div class="emoji-list-content">
+                        <a
+                            @click.prevent.stop="() => insertEmoji(emoji.emoji)"
+                            v-for="emoji in emojis"
+                            :key="emoji.emoji"
+                            href="javascript:void(0)"
+                            class="emoji text-decoration-none"
+                            ><span>{{ emoji.emoji }}</span></a
+                        >
+                    </div>
                 </div>
             </div>
         </div>
+        <div class="d-md-flex justify-content-between"></div>
 
-        <div class="my-5 text-end">
-            <button
-                @click="salvar"
-                class="btn btn-secondary text-white rounded-pill px-5"
-            >
-                Salvar Mensagem
+        <div class="text-end my-5">
+            <button @click="salvar" class="btn btn-primary text-white mx-2">
+                SALVAR
+            </button>
+            <button @click="revisar" class="btn btn-secondary text-white">
+                PRÓXIMA ETAPA
             </button>
         </div>
     </div>
@@ -192,16 +245,16 @@ import "sweetalert2/src/sweetalert2.scss";
 import SvgIcon from "@jamescoyle/vue-icon";
 import { mdiMagnify } from "@mdi/js";
 
-import EditorJS from "@editorjs/editorjs";
-import ImageTool from "@editorjs/image";
-import AttachesTool from "@editorjs/attaches";
+import * as unicodeEmoji from "unicode-emoji";
 
-import * as unicodeEmoji from 'unicode-emoji'
-
+import Nav from "~/components/mensagens/nav.vue";
+import Editor from '~/components/mensagens/editor.vue';
 
 export default {
     components: {
         SvgIcon,
+        Nav,
+        Editor
     },
     data() {
         return {
@@ -210,13 +263,19 @@ export default {
             },
             carregando: false,
             transmission: null,
-            template: "",
+            changed: false,
+            nome: "",
+            template: null,
             editor: null,
             emojiGroups: [],
-            emoji_category: '🙂'
+            emoji_category: "🙂",
         };
     },
     computed: {
+        upload_url() {
+            let access_token = SessionStorage.getItem("access_token");
+            return `${location.origin}/api/transmission/${this.$route.params.id}/upload?access_token=${access_token}`
+        },
         contacts() {
             if (!this.transmission) {
                 return [];
@@ -225,110 +284,141 @@ export default {
         },
         emojis() {
             let groups = this.emojiGroups;
-            let group = groups.find(({ title }) => title == this.emoji_category);
+            let group = groups.find(
+                ({ title }) => title == this.emoji_category
+            );
             if (!group) {
-                return []
-            };
+                return [];
+            }
             return group.emojis;
-        }
+        },
     },
     created() {
-        this.loadTransmission();
-        let emojis = unicodeEmoji.getEmojisGroupedBy('category', {versionAbove: '12.0'});
+        //await this.loadTransmission();
+        let emojis = unicodeEmoji.getEmojisGroupedBy("category", {
+            versionAbove: "12.0",
+        });
         this.emojiGroups = [
             {
-                title: '🙂',
-                emojis: [...emojis['face-emotion'], ...emojis['person-people']]
+                title: "🙂",
+                emojis: [...emojis["face-emotion"], ...emojis["person-people"]],
             },
             {
-                title: '🐻',
-                emojis: emojis['animals-nature'],                
+                title: "🐻",
+                emojis: emojis["animals-nature"],
             },
             {
-                title: '☕',
-                emojis: emojis['food-drink']
+                title: "☕",
+                emojis: emojis["food-drink"],
             },
             {
-                title: '⚽',
-                emojis: emojis['activities-events']
+                title: "⚽",
+                emojis: emojis["activities-events"],
             },
             {
-                title: '🚘',
-                emojis: emojis['travel-places']
+                title: "🚘",
+                emojis: emojis["travel-places"],
             },
             {
-                title: '💡',
-                emojis: emojis['objects']
+                title: "💡",
+                emojis: emojis["objects"],
             },
             {
-                title: '#️⃣',
-                emojis: emojis['symbols']
+                title: "#️⃣",
+                emojis: emojis["symbols"],
             },
             {
-                title: '🏳️',
-                emojis: emojis['flags']
-            }
-        ]
+                title: "🏳️",
+                emojis: emojis["flags"],
+            },
+        ];
     },
-    mounted() {
-        let access_token = SessionStorage.getItem("access_token");
-        this.editor = new EditorJS({
-            holder: this.$refs.editorjs,
-            tools: {
-                attaches: {
-                    class: AttachesTool,
-                    config: {
-                        endpoint: `${location.origin}/api/transmission/${this.$route.params.id}/upload?access_token=${access_token}`,
-                    },
-                },
-                image: {
-                    class: ImageTool,
-                    inlineToolbar: true,
-                    config: {
-                        endpoints: {
-                            byFile: `${location.origin}/api/transmission/${this.$route.params.id}/upload?access_token=${access_token}`,
-                        },
-                    },
-                },
-            },
+    async beforeRouteEnter(to, from, next) {
+        let transmission_id = to.params.id;
+        let { data: transmission } = await api.get(
+            `transmission/${transmission_id}`
+        );
+        console.log("beforeRouteEnter"); 
+        next((vm) => {
+            console.log("setTransmission");            
+            vm.setTransmission(transmission);
         });
+    },
+    async beforeRouteUpdate(to, from, next) {
+        console.log("beforeRouteUpdate");
+        let transmission_id = to.params.id;
+        let { data: transmission } = await api.get(
+            `transmission/${transmission_id}`
+        );
+        this.setTransmission(transmission);
+    },
+    mounted() {        
+        console.log('mounted')
+        //this.setEditor();
+    },
+    updated() {
+        console.log('udpate');
+        //this.setEditor();
     },
     methods: {
         async insertVariable(text, field) {
             let selection = window.getSelection();
             let range = selection.getRangeAt(0);
             range.deleteContents();
-            //let node = document.createTextNode(emoji);
-            let span = document.createElement('span');
-            span.innerHTML = text;
-            span.classList.add('badge', 'bg-dark', 'text-uppercase')
-            span.setAttribute('field', field);
-            span.contentEditable = false;
-            let textNode = document.createElement("span")
-            textNode.innerHTML = '&nbsp;';            
+            let textNode = document.createElement("span");
+            textNode.innerHTML = ` ${field} `;
             range.insertNode(textNode);
-            
-            range.insertNode(span);
-            
 
-            for(let position = 0; position != text.length + 1; position++)
-            {
+            let textNode2 = document.createElement("span");
+            textNode2.innerHTML = "&nbsp;";
+            range.insertNode(textNode2);
+
+            for (let position = 0; position != text.length + 1; position++) {
                 selection.modify("move", "right", "character");
-            };
+            }
 
-            
+            this.$nextTick(() => {
+                let el = textNode2.parentNode;
+                el.focus();
+                if (
+                    typeof window.getSelection != "undefined" &&
+                    typeof document.createRange != "undefined"
+                ) {
+                    var range = document.createRange();
+                    range.selectNodeContents(el);
+                    range.collapse(false);
+                    var sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } else if (
+                    typeof document.body.createTextRange != "undefined"
+                ) {
+                    var textRange = document.body.createTextRange();
+                    textRange.moveToElementText(el);
+                    textRange.collapse(false);
+                    textRange.select();
+                }
+            });
         },
-        insertEmoji(emoji) {       
+        insertEmoji(emoji) {
             let selection = window.getSelection();
             let range = selection.getRangeAt(0);
             range.deleteContents();
             let node = document.createTextNode(emoji);
             range.insertNode(node);
 
-            for(let position = 0; position != emoji.length; position++)
-            {
+            for (let position = 0; position != emoji.length; position++) {
                 selection.modify("move", "right", "character");
-            };          
+            }
+        },
+        setTransmission(transmission) {
+            this.transmission = transmission;
+            this.template = transmission.template;
+            this.nome = transmission.nome;
+            this.$nextTick(() => {
+                this.changed = false;
+
+            })
         },
         async loadTransmission() {
             try {
@@ -336,8 +426,7 @@ export default {
                 let { data: transmission } = await api.get(
                     `transmission/${transmission_id}`
                 );
-                this.transmission = transmission;
-                this.template = transmission.template;
+                this.setTransmission(transmission);
             } catch (err) {
                 let text = "Não foi possível carregar a mensagem.";
                 if (err.response && err.response.data) {
@@ -357,13 +446,10 @@ export default {
                 let transmission = await api.post(
                     `/transmission/${transmission_id}/save`,
                     {
+                        id: transmission_id,
                         template,
                     }
                 );
-                /*
-                this.transmission = transmission;
-                this.template = transmission.template;
-                */
                 this.loadTransmission();
                 Swal.fire({
                     icon: "success",
@@ -371,7 +457,7 @@ export default {
                     text: "Mensagem salva com sucesso.",
                 });
             } catch (err) {
-                console.log(err);
+                console.error(err);
                 let text = "Não foi possível carregar a mensagem.";
                 if (err.response && err.response.data) {
                     text = err.response.data.error;
@@ -383,7 +469,28 @@ export default {
                 });
             }
         },
+        async revisar() {
+            try {
+                let template = await this.editor.save();
+                if (this.changed) {
+                    let { isConfirmed } = await Swal.fire({
+                        title: "Deseja continuar sem salvar?",
+                        text: "Você possui alterações não salvas, deseja continuar mesmo assim?",
+                        icon: "warning",
+                        showConfirmButton: true,
+                        showCancelButton: true,
+                        confirmButtonText: "Sim",
+                        cancelButtonText: "Não",
+                    });
+                    if (!isConfirmed) {
+                        return;
+                    }
+                }
+                this.$router.push(`/mensagens/${this.transmission.id}/revisar`);
+            } catch (err) {}
+        },
         async adicionarImage() {
+            let access_token = SessionStorage.getItem("access_token");
             let input = document.createElement("input");
             input.type = "file";
             input.multiple = true;
@@ -392,71 +499,57 @@ export default {
                     return;
                 }
 
-                let files = [...input.files].map((file) => {
-                    return new Promise((resolve, reject) => {
-                        let reader = new FileReader();
-                        reader.addEventListener("loadend", (evt) => {
-                            resolve(reader.result);
+                let files = [...input.files].map(async (file) => {
+                    let data = new FormData();
+                    data.append("file", file, file.name);
+                    let {
+                        data: { success, file: File },
+                    } = await api.post(
+                        `${location.origin}/api/transmission/${this.$route.params.id}/upload?access_token=${access_token}`,
+                        data,
+                        {
+                            headers: {
+                                accept: "application/json",
+                                "Content-Type":
+                                    "multipart/form-data; bondary=${data._bondary}",
+                            },
+                        }
+                    );
+                    if (success) {
+                        if (/^image/.test(file.type)) { 
+                            this.editor.blocks.insert("image", {
+                                file: {
+                                    url: File.url,
+                                    name: file.name,
+                                    size: file.size,
+                                },
+                                title: file.name,
+                            });
+                        } else {
+                            this.editor.blocks.insert("attaches", {
+                                file: {
+                                    url: File.url,
+                                    name: file.name,
+                                    size: file.size,
+                                },
+                                title: file.name,
+                            });
+                        }
+                    }
 
-                            let type = "attaches";
-                            if (/^image/.test(file.type)) {
-                                this.editor.blocks.insert("image", {
-                                    file: {
-                                        url: reader.result,
-                                        name: file.name,
-                                        size: file.size,
-                                    },
-                                    title: file.name,
-                                });
-                            } else {
-                                this.editor.blocks.insert("attaches", {
-                                    file: {
-                                        url: reader.result,
-                                        name: file.name,
-                                        size: file.size,
-                                    },
-                                    title: file.name,
-                                });
-                            }
-                        });
-                        reader.readAsDataURL(file);
-                    });
                 });
-
-                files = await Promise.all(files);
-                for (let file of files) {
-                }
             });
             input.click();
-        },
-        async enviar() {
-            try {
-                await api.post(`/whatsapp/transmission/${this.transmission.id}/send`);
-                Swal.fire({
-                    icon: "success",
-                    title: "Sucesso!",
-                    text: "Mensagem salva com sucesso.",
-                });
-            } catch (err) {
-                console.log(err);
-                let text = "Não foi possível carregar a mensagem.";
-                if (err.response && err.response.data) {
-                    text = err.response.data.error;
-                }
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text,
-                });
-            }
         },
     },
     watch: {
         template() {
-            console.log(this.editor);
-            this.editor.isReady.then(() => {
-                this.editor.blocks.render(this.template);
-            });
+            console.log(arguments)
+            this.changed = true;
+        },
+        nome() {
+            console.log(arguments)
+            this.changed = true;
         },
     },
 };
@@ -476,10 +569,9 @@ export default {
     .emoji-list-content {
         overflow-y: auto;
         max-height: 300px;
-
     }
     display: inline-block;
-    max-width: 50%;
+    /*max-width: 50%;*/
 }
 a.emoji {
     font-size: 24px;
@@ -487,7 +579,11 @@ a.emoji {
 .emoji-nav {
     .active {
         background-color: var(--bs-gray-200);
-
+    }
+}
+.nav-item {
+    a {
+        cursor: pointer;
     }
 }
 </style>

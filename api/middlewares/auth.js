@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import UserModel from '../models/User.js';
 
-dotenv.config();
-
-export default (req, res, next) => {
+export default async (req, res, next) => {
     try {        
         let access_token = req.headers['authorization']||req.headers['x-access-token']||req.query.access_token;
         
@@ -13,6 +11,11 @@ export default (req, res, next) => {
         access_token = access_token.replace(/^Bearer\s*/, '');        
         
         let decoded = jwt.verify(access_token, process.env.JWT_SECRET);
+        
+        let user = await UserModel.findByPk(decoded.id);
+        if (!user) {
+            throw new Error("Unauthorized");
+        }
         req.userId = decoded.id;
 
         next();

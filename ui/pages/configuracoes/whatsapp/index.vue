@@ -110,7 +110,7 @@ export default {
             await swal;
             events.close();
             events = null;
-            console.log('closing');
+            
         }
     }
 };

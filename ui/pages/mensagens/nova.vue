@@ -98,7 +98,23 @@ export default {
                if (0 === this.contatos.length) {
                    throw new Error('Nenhum contato selecionado.');
                }
+               let { value: nome } = await Swal.fire({
+                   title: "Informe o nome da mensagem",
+                   input: 'text',
+                   inputLabel: "Nome da mensagem",
+                   inputValue: '',
+                   showCancelButton: true,
+                   inputValidator(value) {
+                       if (!value) {
+                           return "Você precisa informar um nome para a mensagem!";
+                       }
+                   }
+               });
+               if (!nome) {
+                   return;
+               }
                let { data: transmission } = await api.post('/transmission/create', {
+                   nome,
                    contact_ids: this.contatos
                })
                this.$router.push(`/mensagens/${transmission.id}/definir-mensagem`);

@@ -1,4 +1,13 @@
 {
     "prettier.tabWidth": 4,
-    "vetur.format.options.tabSize": 4
+    "vetur.format.options.tabSize": 4,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "whats",
+            "database": "${workspaceFolder:whatsapp-manager}/database.sqlite"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
 }

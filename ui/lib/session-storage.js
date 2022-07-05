@@ -1,18 +1,18 @@
 export default {
     setItem(name, value = null) {
-        window.sessionStorage.setItem(name, JSON.stringify(value));
+        window.localStorage.setItem(name, JSON.stringify(value));
         let event = new Event('storage');
         window.dispatchEvent(event);
     },
     getItem(name) {
         try {
-            return JSON.parse(window.sessionStorage.getItem(name));
+            return JSON.parse(window.localStorage.getItem(name));
         } catch (err) {
             return null;
         }
     },
     removeItem(name) {
-        window.sessionStorage.removeItem(name);
+        window.localStorage.removeItem(name);
         let event = new Event('storage');
         window.dispatchEvent(event);
     }

@@ -16,16 +16,17 @@
             <div v-else-if="contatos.length == 0">
                 <p>Nenhum número disponível.</p>
             </div>
-            <div v-if="contatos.length > 0">
+            <div v-if="contatos.length > 0" class="table-responsive">
                 <table class="table table-borderless">
                     <thead>
                         <tr>
                             <th width="40px" class="text-center">
                                 <input type="checkbox">
-                            </th>
-                            <th width="80px"></th>
-                            <th>Nome</th>
+                            </th>                            
+                            <th colspan="2">Contato</th>
+                            <!--
                             <th>E-mail/Instagram</th>
+                            -->
                             <th>Tags</th>
                             <th class="text-center" width="170px">Último Contato</th>
                             <th class="text-end" width="170px">Última Atualização</th>

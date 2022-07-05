@@ -44,8 +44,21 @@ WhatsappMessage.init({
     hasQuotedMsg: {
         type: DataTypes.BOOLEAN
     },
+    _data: {
+        type: DataTypes.TEXT,
+        get() {
+            try {
+                return JSON.parse(this.getDataValue('_data'));
+            } catch (err) {
+                return null;
+            }
+        },
+        set(val) {
+            this.setDataValue('_data', JSON.stringify(val));
+        }
+    },
     wid: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         get() {
             try {
                 return JSON.parse(this.getDataValue('wid'));
@@ -58,7 +71,7 @@ WhatsappMessage.init({
         }
     },
     inviteV4: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         get() {
             try {
                 return JSON.parse(this.getDataValue('inviteV4'));            
@@ -92,7 +105,7 @@ WhatsappMessage.init({
     mentionedIds: {
         type: DataTypes.STRING,
         get() {
-            return this.getDataValue('mentionedIds').split('|')
+            return (this.getDataValue('mentionedIds')||'').split('|').filter(v => v)
         },
         set(val) {
             this.setDataValue('mentionedIds', val.join('|'))
@@ -113,7 +126,7 @@ WhatsappMessage.init({
     vCards: {
         type: DataTypes.STRING,
         get() {
-            return this.getDataValue('vCards').split('|')
+            return (this.getDataValue('vCards')||'').split('|').filter(v => v)
         },
         set(val) {
             this.setDataValue('vCards', val.join('|'))

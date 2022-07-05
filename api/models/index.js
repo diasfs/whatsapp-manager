@@ -11,10 +11,10 @@ import WhatsappLink from './WhatsappLink.js';
 import WhatsappMessage from './WhatsappMessage.js';
 import Transmission from './Transmission.js';
 import TransmissionContacts from './TransmissionContacts.js';
+import TransmissionQueue from './TransmissionQueue.js';
 
-//await connection.sync({ force :true});
-//await connection.sync({ alter :true});
 await connection.sync();
+//await Transmission.sync({ alter: true });
 
 export {
     Address,
@@ -29,6 +29,7 @@ export {
     WhatsappMessage,
     Transmission,
     TransmissionContacts,
+    TransmissionQueue,
     connection
 }
 
@@ -45,5 +46,6 @@ export default {
     WhatsappMessage,
     Transmission,
     TransmissionContacts,
+    TransmissionQueue,
     connection
 }

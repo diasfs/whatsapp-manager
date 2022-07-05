@@ -18,6 +18,9 @@
                     <router-link to="/crm" class="nav-link"  active-class="active">Contatos</router-link>
                 </li>
                 <li class="nav-item">
+                    <router-link to="/listas" class="nav-link"  active-class="active">Listas</router-link>
+                </li>
+                <li class="nav-item">
                     <router-link to="/mensagens" class="nav-link"  active-class="active">Mensagens</router-link>
                 </li>
                 <!--

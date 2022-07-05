@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '~/lib/api';
 import Swal from 'sweetalert2';
 import SessionStorage from '../../lib/session-storage'
 
@@ -44,7 +44,7 @@ export default {
         async signIn() {
             try {
                 this.entrando = true;
-                let { data : { access_token } } = await axios.post('/api/user/sign-in', {
+                let { data : { access_token } } = await api.post('user/sign-in', {
                     email: this.email,
                     password: this.password
                 });
