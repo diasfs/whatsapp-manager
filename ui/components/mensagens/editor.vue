@@ -18,7 +18,7 @@ export default {
     methods: {
         async setEditor() {
             if (this.editor) {
-                console.log(typeof this.editor.destroy, "editor");
+                await this.editor.isReady                
                 this.editor.destroy();
                 this.editor = null;
             }
@@ -49,7 +49,7 @@ export default {
                     ...this.template
                 }
             };
-            console.log(config);
+            
             this.editor = new EditorJS(config);
             await this.editor.isReady;
             this.$emit("ready", this.editor);
@@ -59,24 +59,26 @@ export default {
             
             let template = JSON.parse(JSON.stringify(this.template));
             if (template.blocks && template.blocks.length) {
+                
                 this.editor.blocks.render({
                     blocks: template.blocks
                 })
+                
 
             }
         },
     },
     created() {
-        console.log("editor:created");
+        
     },
     mounted() { 
-        console.log("editor:mounted");
+        
         this.$nextTick(() => { 
             this.setEditor();
         });
     },
     updated() {
-        console.log("editor:updated");
+        
         this.$nextTick(() => {
             this.setEditor();
         });
@@ -87,10 +89,10 @@ export default {
             async handler(v) {
                 if (this.editor) {
                     await this.editor.isReady;
-                    if (!this.template) {
+                    if (!this.template || !this.template.blocks) {
                         return;
                     }
-                    console.log('tempol')
+                    
                     this.editor.blocks.render(this.template);
                 }
             },

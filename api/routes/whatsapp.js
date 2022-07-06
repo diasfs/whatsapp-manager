@@ -14,6 +14,7 @@ import {
     WhatsappContact as WhatsappContactModel,
     Contact as ContactModel,
     Transmission as TransmissionModel,
+    Tag as TagModel
 } from "../models/index.js";
 
 const router = new Router();
@@ -28,7 +29,11 @@ WhatsappConnectionModel.findAll({
         connection.state = "OPENING";
         let client = connection.WhatsappClient;
         client.on("ready", async () => {
-            connection.state = await client.getState();
+            try {
+                connection.state = await client.getState();
+            } catch (err) {
+                console.error(err);
+            }
         });
         client.on("auth_failure", (msg) => {
             connection.state = "DISCONNECTED";
@@ -74,49 +79,55 @@ router.get("/conexoes", async (req, res) => {
     };
 
     for (let connection of Connections[req.userId]) {
-        let c = connection.toJSON();
-        c.state = connection.state;
-        c.importing = connection.importing;
-        c.import_percentual = 0;
+        try {
+            let c = connection.toJSON();
+            c.state = connection.state;
+            c.importing = connection.importing;
+            c.import_percentual = 0;
+    
+            if (connection.WhatsappContact) {
+                updateProfilePicUrl(connection);
+                c.Contact = connection.WhatsappContact.toJSON();
+                //console.log({ profilePictureUrl });
+            } else {
+                let Contact = await connection.getWhatsappContact();
+                if (!Contact) {
+                    let client = connection.WhatsappClient;
 
-        if (connection.WhatsappContact) {
-            updateProfilePicUrl(connection);
-            c.Contact = connection.WhatsappContact.toJSON();
-            //console.log({ profilePictureUrl });
-        } else {
-            let Contact = await connection.getWhatsappContact();
-            if (!Contact) {
-                let client = connection.WhatsappClient;
-                let contact = await client.getContactById(
-                    connection.wid._serialized
-                );
-                let about = await contact.getAbout();
-                let profilePictureUrl = await contact.getProfilePicUrl();
-
-                let number = await contact.getFormattedNumber();
-
-                Contact = await WhatsappContactModel.create({
-                    WhatsappConnectionId: connection.id,
-                    WhatsappId: contact.id,
-                    businessProfile: contact.businessProfile,
-                    isBlocked: contact.isBlocked,
-                    isBusiness: contact.isBusiness,
-                    isEnterprise: contact.isEnterprise,
-                    isGroup: contact.isGroup,
-                    isUser: contact.isUser,
-                    isWAContact: contact.isWAContact,
-                    name: contact.name,
-                    number: number,
-                    pushname: contact.pushname,
-                    shortName: contact.shortName,
-                    verifiedName: contact.verifiedName,
-                    about,
-                    profilePictureUrl,
-                });
+                    let contact = await client.getContactById(
+                        connection.wid._serialized
+                    );
+                    let about = await contact.getAbout();
+                    let profilePictureUrl = await contact.getProfilePicUrl();
+    
+                    let number = await contact.getFormattedNumber();
+    
+                    Contact = await WhatsappContactModel.create({
+                        WhatsappConnectionId: connection.id,
+                        WhatsappId: contact.id,
+                        businessProfile: contact.businessProfile,
+                        isBlocked: contact.isBlocked,
+                        isBusiness: contact.isBusiness,
+                        isEnterprise: contact.isEnterprise,
+                        isGroup: contact.isGroup,
+                        isUser: contact.isUser,
+                        isWAContact: contact.isWAContact,
+                        name: contact.name,
+                        number: number,
+                        pushname: contact.pushname,
+                        shortName: contact.shortName,
+                        verifiedName: contact.verifiedName,
+                        about,
+                        profilePictureUrl,
+                    });
+                }
+                c.Contact = Contact.toJSON();
             }
-            c.Contact = Contact.toJSON();
+
+            connections.push(c);
+        } catch (err) {
+            console.error(err);
         }
-        connections.push(c);
     }
     //    console.log(connections);
     return res.json(connections);
@@ -219,52 +230,62 @@ router.get("/conexoes/nova", async (req, res) => {
 
     let ready = false;
     client.on("ready", async () => {
-        connection.wid = client.info.wid;
-        connection.pushname = client.info.pushname;
+        try {
+            connection.wid = client.info.wid;
+            connection.pushname = client.info.pushname;
+    
+            let contact = await client.getContactById(connection.wid._serialized);
+            connection.name = contact.name;
+            await connection.save();
+    
+            let about = await contact.getAbout();
+            let profilePictureUrl = await contact.getProfilePicUrl();
+    
+            let number = await contact.getFormattedNumber();
+    
+            connection.WhatsappContact = await WhatsappContactModel.create({
+                WhatsappConnectionId: connection.id,
+                WhatsappId: contact.id,
+                businessProfile: contact.businessProfile,
+                isBlocked: contact.isBlocked,
+                isBusiness: contact.isBusiness,
+                isEnterprise: contact.isEnterprise,
+                isGroup: contact.isGroup,
+                isUser: contact.isUser,
+                isWAContact: contact.isWAContact,
+                name: contact.name,
+                number: number,
+                pushname: contact.pushname,
+                shortName: contact.shortName,
+                verifiedName: contact.verifiedName,
+                about,
+                profilePictureUrl,
+            });
+    
+            if ("undefined" === typeof Connections[req.userId]) {
+                Connections[req.userId] = [];
+            }
+            Connections[req.userId].push(connection);
+            ConnectionsEvents.emit("updated");
+            ConnectionsEvents.emit("new_connection", connection);
+    
+            ready = true;
+            res.write(
+                `event: authenticated\ndata: ${JSON.stringify({ clientId })}\n\n`
+            );
 
-        let contact = await client.getContactById(connection.wid._serialized);
-        connection.name = contact.name;
-        await connection.save();
-
-        let about = await contact.getAbout();
-        let profilePictureUrl = await contact.getProfilePicUrl();
-
-        let number = await contact.getFormattedNumber();
-
-        connection.WhatsappContact = await WhatsappContactModel.create({
-            WhatsappConnectionId: connection.id,
-            WhatsappId: contact.id,
-            businessProfile: contact.businessProfile,
-            isBlocked: contact.isBlocked,
-            isBusiness: contact.isBusiness,
-            isEnterprise: contact.isEnterprise,
-            isGroup: contact.isGroup,
-            isUser: contact.isUser,
-            isWAContact: contact.isWAContact,
-            name: contact.name,
-            number: number,
-            pushname: contact.pushname,
-            shortName: contact.shortName,
-            verifiedName: contact.verifiedName,
-            about,
-            profilePictureUrl,
-        });
-
-        if ("undefined" === typeof Connections[req.userId]) {
-            Connections[req.userId] = [];
+        } catch (err) {
+            console.error(err);
         }
-        Connections[req.userId].push(connection);
-        ConnectionsEvents.emit("updated");
-        ConnectionsEvents.emit("new_connection", connection);
-
-        ready = true;
-        res.write(
-            `event: authenticated\ndata: ${JSON.stringify({ clientId })}\n\n`
-        );
     });
     req.on("close", () => {
         if (!ready) {
-            client.destroy();
+            try {
+                client.destroy();
+
+            } catch (err) {
+                console.error(err);
+            }
         }
     });
 });
@@ -309,6 +330,7 @@ router.get("/conexao/:id/reconectar", async (req, res) => {
 
     req.on("close", () => {
         if (!ready) {
+            console.log('not ready disconnecting')
             connection.disconnect();
         }
     });
@@ -337,6 +359,7 @@ router.post("/conexao/:id/desconectar", async (req, res) => {
     }
 
     try {
+        console.log('desconectando')
         await connection.logout();
         res.json({
             message: "Número desconectado com sucesso.",
@@ -367,9 +390,19 @@ router.delete("/conexao/:id", async (req, res) => {
     Connections[req.userId] = Connections[req.userId].filter(
         ({ id }) => id !== connection_id
     );
-
-    await connection.logout();
-    connection.destroy();
+    
+    try {
+        console.log('deleting')
+        await connection.logout();
+    } catch (err) {
+        console.error(err);
+    }
+    try {
+        console.log('deleting')
+        connection.destroy();
+    } catch(err) {
+        console.error(err);
+    }
     ConnectionsEvents.emit("updated");
     ConnectionsEvents.emit("connection_removed", connection);
     res.json({
@@ -391,17 +424,35 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
             (connection) => connection.id == connection_id
         );
 
+        console.log('connection found');
+
         if (!connection) {
             return res.status(404).json({
                 error: "Conexão não encontrada.",
             });
         }
+
+        let tag = await TagModel.findOne({
+            where: {
+
+                UserId: req.userId,
+                name: 'Whatsapp'
+            }
+        });
+        if (!tag) {
+            tag = await TagModel.create({
+                UserId: req.userId,
+                name: 'Whatsapp'
+            });
+        }
+
         connection.import_percentual = 0;
         connection.importing = true;
         let imported = 0;
         let rows = await connection.getContacts();
+        
 
-        await fs.writeFile(`${root}/backup/contatos.json`, JSON.stringify(rows));
+        //await fs.writeFile(`${root}/backup/contatos.json`, JSON.stringify(rows));
 
         rows = rows.filter(row => {
             if (row.isGroup) return false;
@@ -417,11 +468,18 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
         });
 
         for (let row of rows) {
-
-            let [number, profilePictureUrl = '', about = ''] = await Promise.all([
+            
+            
+            let [number = '', profilePictureUrl = '', about = ''] = await Promise.all([
                 row.getFormattedNumber(),
-                row.getProfilePicUrl().catch(err => ''),
-                row.getAbout().catch(err => '')
+                row.getProfilePicUrl().catch(err => {
+                    console.error(err);
+                    return '';
+                }),
+                row.getAbout().catch(err => {
+                    console.log(err);
+                    return '';
+                })
             ]);
 
 
@@ -461,6 +519,8 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
             contact.biografia = about;
             await contact.save();
 
+            contact.addTag(tag);
+
 
             let wacontact = await WhatsappContactModel.findOne({
                 where: {
@@ -475,6 +535,7 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
                 });
             }
 
+            console.log({ profilePictureUrl })
             wacontact.set({
                 about,
                 profilePictureUrl,

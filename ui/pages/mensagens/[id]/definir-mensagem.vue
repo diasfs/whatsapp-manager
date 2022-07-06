@@ -115,7 +115,7 @@
                         class="position-relative"
                     >
 
-                        <Editor :template="template" :upload_url="upload_url" v-if="template" @ready="ed => this.editor = ed" />
+                        <Editor :template="template" :upload_url="upload_url" @ready="ed => this.editor = ed" />
                         <ul class="nav">
                             <li class="nav-item">
                                 <a href="" class="nav-link">
@@ -338,14 +338,14 @@ export default {
         let { data: transmission } = await api.get(
             `transmission/${transmission_id}`
         );
-        console.log("beforeRouteEnter"); 
+        
         next((vm) => {
-            console.log("setTransmission");            
+                   
             vm.setTransmission(transmission);
         });
     },
     async beforeRouteUpdate(to, from, next) {
-        console.log("beforeRouteUpdate");
+        
         let transmission_id = to.params.id;
         let { data: transmission } = await api.get(
             `transmission/${transmission_id}`
@@ -353,11 +353,11 @@ export default {
         this.setTransmission(transmission);
     },
     mounted() {        
-        console.log('mounted')
+        
         //this.setEditor();
     },
     updated() {
-        console.log('udpate');
+        
         //this.setEditor();
     },
     methods: {
@@ -544,11 +544,11 @@ export default {
     },
     watch: {
         template() {
-            console.log(arguments)
+            
             this.changed = true;
         },
         nome() {
-            console.log(arguments)
+            
             this.changed = true;
         },
     },

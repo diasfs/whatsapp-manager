@@ -13,11 +13,13 @@
     "@jamescoyle/vue-icon": "^0.1.2",
     "@mdi/js": "^6.5.95",
     "@popperjs/core": "^2.11.2",
+    "@sipec/vue3-tags-input": "^3.0.4",
     "@vitejs/plugin-vue": "^2.2.2",
     "axios": "^0.26.0",
     "bcrypt": "^5.0.1",
     "bootstrap": "^5.1.3",
     "cors": "^2.8.5",
+    "country-codes-list": "^1.6.8",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
@@ -40,12 +42,13 @@
     "vite-plugin-mix": "^0.3.1",
     "vite-plugin-voie": "^0.7.3",
     "vue": "^3.2.25",
+    "vue-phone-number-input": "^1.1.12",
     "vue-router": "^4",
     "whatsapp-web.js": "^1.16.2"
   },
   "scripts": {
     "start:api": "yarn && nodemon api/index.js",
-    "dev": "vite --host 0.0.0.0",
+    "dev": "yarn && vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview"
   },

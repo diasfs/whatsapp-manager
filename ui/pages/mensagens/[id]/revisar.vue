@@ -85,7 +85,7 @@ export default {
                 this.$router.push(`/mensagens/${this.$route.params.id}/status`)
                 
             } catch (err) {
-                console.log(err);
+                console.error(err);
                 let text = "Não foi possível enviar a mensagem.";
                 if (err.response && err.response.data) {
                     text = err.response.data.error;

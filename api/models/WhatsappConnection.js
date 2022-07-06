@@ -258,13 +258,13 @@ class WhatsappConnection extends Model {
         if (!this.#client) {
             return;
         }
-        await this.#client.logout();
+        await this.#client.logout().catch(console.error);
         this.#client = null;
     }
 
     async disconnect() {
         if (null !== this.#client) {
-            await this.#client.destroy();
+            await this.#client.destroy().catch(console.error);
         }
         this.#client = null;
         this.state = "DISCONNECTED";
@@ -276,7 +276,10 @@ class WhatsappConnection extends Model {
             return [];
         }
 
-        return await client.getContacts();
+        return await client.getContacts().catch(err => {
+            console.error(err);
+            return [];
+        });
     }
 }
 

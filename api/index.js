@@ -12,6 +12,7 @@ import CRMRouter from './routes/crm.js';
 import TransmissionRouter from './routes/transmission.js';
 import BackupRouter from './routes/backup.js';
 import ContactListRouter from './routes/contact-list.js';
+import TagsRouter from './routes/tags.js';
 
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -46,6 +47,7 @@ app.use('/api/whatsapp', AuthMiddleware, WhatsappRouter);
 app.use('/api/crm', AuthMiddleware, CRMRouter);
 app.use('/api/transmission', AuthMiddleware, TransmissionRouter);
 app.use('/api/contact-list', AuthMiddleware, ContactListRouter);
+app.use('/api/tags', AuthMiddleware, TagsRouter);
 app.use('/api/backup', BackupRouter);
 
 const PORT = process.env.PORT||3000

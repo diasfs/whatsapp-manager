@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Contact as ContactModel } from '../models/index.js';
+import { Contact as ContactModel, Address as AddressModel, Tag as TagModel } from '../models/index.js';
 import { Connections, getConnectionsByUserId } from '../connections.js';
 
 const router = new Router();
@@ -107,7 +107,15 @@ router.get('/contatos', async (req, res) => {
                 UserId: req.userId
             },
             order: [['nome', 'ASC'], ['sobrenome', 'asc']],
-            include: 'WhatsappContact'
+            include: [
+                'WhatsappContact',
+                {
+                    model: TagModel,
+                    through: {
+                        attributes: []
+                    }
+                }
+            ],
         });
         /*
         let [connection] = getConnectionsByUserId(req.userId);
@@ -158,7 +166,7 @@ router.get('/contatos', async (req, res) => {
 
         try {
             for (let contact of contacts) {
-                if (/^http/.exec(contact.WhatsappContact.profilePictureUrl) || contact.WhatsappContact.profilePictureUrl == '' || contact.WhatsappContact.profilePictureUrl === null) {
+                if (contact.WhatsappContact && (/^http/.exec(contact.WhatsappContact.profilePictureUrl) || contact.WhatsappContact.profilePictureUrl == '' || contact.WhatsappContact.profilePictureUrl === null)) {
                     await updateProfilePicUrl(contact.id, req.userId);
                 }
             }
@@ -173,7 +181,7 @@ router.get('/contatos', async (req, res) => {
 
 router.get('/contatos/:id', async (req, res) => {
 
-    
+
     try {
         let contact = await ContactModel.findOne({
             //logging: console.log,
@@ -183,7 +191,7 @@ router.get('/contatos/:id', async (req, res) => {
                 id: req.params.id,
                 UserId: req.userId,
             },
-            include: 'WhatsappContact'
+            include: ['WhatsappContact', 'Address', 'Tags'],
         });
         contact = contact.toJSON();
         //contact.wa = await updateProfile(contact.id, req.userId);
@@ -194,7 +202,136 @@ router.get('/contatos/:id', async (req, res) => {
             error: err.message
         });
     }
-    
+
 });
+
+router.post('/contatos/save', async (req, res) => {
+    try {
+        let record;
+        if (req.body.id) {
+            record = await ContactModel.findByPk(req.body.id, {
+                include: ['Tags', AddressModel]
+            });
+        } else {
+            record = await ContactModel.create({
+                UserId: req.userId,
+            }, {
+                include: ['Tags', AddressModel]
+            });
+        }
+
+        if (req.body.nome !== null) {
+            record.nome = req.body.nome;
+        }
+        if (req.body.sobrenome !== null) {
+            record.sobrenome = req.body.sobrenome;
+        }
+        if (req.body.empresa !== null) {
+            record.empresa = req.body.empresa;
+        }
+        if (req.body.cargo !== null) {
+            record.cargo = req.body.cargo;
+        }
+        if (req.body.email !== null) {
+            record.email = req.body.email;
+        }
+        if (req.body.facebook !== null) {
+            record.facebook = req.body.facebook;
+        }
+        if (req.body.instagram !== null) {
+            record.instagram = req.body.instagram;
+        }
+        if (req.body.celular !== null) {
+            record.celular = req.body.celular;
+        }
+        if (req.body.telefone !== null) {
+            record.telefone = req.body.telefone;
+        }
+        if (req.body.aniversario !== null) {
+            record.aniversario = req.body.aniversario;
+        }
+        if (req.body.Address) {
+            if (!record.Address) {
+                await record.createAddress({
+                    ...req.body.Address
+                });
+            } else {
+                record.Address.set({
+                    ...req.body.Address
+                });
+                await record.Address.save();
+            }
+        }
+
+        if (req.body.Tags) {
+            for(let row of req.body.Tags) {
+                if (!!row.id) {
+                    continue;
+                }
+                let tag = await TagModel.findOne({
+                    where: {
+                        UserId: req.userId,
+                        name: row.name
+                    }
+                });
+                console.log(tag, row.name)
+                if (!tag) {
+                    tag = await TagModel.create({
+                        UserId: req.userId,
+                        name: row.name
+                    })
+                    
+                }
+                if (tag) {
+                    row.id = tag.id;
+                }
+            }
+            let ids = req.body.Tags.map(({ id }) => id);
+            ids = [...new Set(ids)];
+            console.log({ ids })
+            console.log(req.body.Tags)
+            if (0 != ids.length) {
+                let tags = await TagModel.findAll({
+                    where: {
+                        UserId: req.userId,
+                        id: ids
+                    }
+                });
+                await record.setTags(tags);
+            }
+        }
+
+        await record.save();
+        res.json(record);
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+})
+
+router.delete('/contatos/delete', async (req, res) => {
+    try {
+        let { ids = [] } = req.body;
+        if (0 === ids.length) {
+            throw new Error("Nenhum contato selecionado.");
+        }
+
+        ContactModel.destroy({
+            where: {
+                UserId: req.userId,
+                id: ids
+            }
+        });
+
+        res.json({
+            success: true
+        })
+    } catch (err) {
+        res.status(500).json({
+            error: err.message,
+        });
+    }
+})
 
 export default router;
