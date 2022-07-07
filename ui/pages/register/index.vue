@@ -22,9 +22,11 @@
             <small>
                 <router-link to="/login">Já possuo cadastro</router-link>
             </small>
+            <!--
             <small>
                 <router-link to="/forgoten">Esqueci minha senha</router-link>
             </small>
+            -->
         </p>
     </form>
 </template>

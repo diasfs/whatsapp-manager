@@ -2,6 +2,7 @@ import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import MessageMedia from "whatsapp-web.js/src/structures/MessageMedia.js";
 import { Connections, Events as ConnectionsEvents } from "../connections.js";
+import { WhatsappContact  } from '../models/index.js';
 
 import fs from 'fs/promises';
 import * as url from 'url';
@@ -47,6 +48,24 @@ WhatsappConnectionModel.findAll({
     //console.log(Connections);
     ConnectionsEvents.emit("updated");
 });
+
+/*
+const updateContacts = async () => {
+    console.log('atualizando')
+    let contacts = await WhatsappContact.findAll();
+    for (let contact of contacts) {
+        contact.WhatsappId_serialized = contact.WhatsappId._serialized;
+        await contact.save();
+    }
+    console.log('atualizado');
+}
+updateContacts().then(() => {
+    console.log('terminou')
+}).catch(err => {
+    console.error('nao deu')
+    console.error(err.message);
+});
+*/
 
 router.get("/conexoes", async (req, res) => {
     //console.log(req.userId);
@@ -714,5 +733,6 @@ router.post("/transmission/:id/send", async (req, res) => {
         });
     }
 });
+
 
 export default router;

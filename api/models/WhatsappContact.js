@@ -36,8 +36,14 @@ WhatsappContact.init(
                 }
             },
             set(val) {
+                if (val._serialized) {
+                    this.setDataValue('WhatsappId_serialized');
+                }
                 this.setDataValue("WhatsappId", JSON.stringify(val));
             },
+        },
+        WhatsappId_serialized: {
+            type: DataTypes.STRING
         },
         name: {
             type: DataTypes.STRING,

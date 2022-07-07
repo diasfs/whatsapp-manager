@@ -22,6 +22,7 @@
                     type="text"
                     class="form-control"
                     placeholder="Buscar mensagem pelo nome"
+                    v-model="keyword"
                 />
                 <svg-icon
                     @click="buscar"
@@ -109,24 +110,49 @@ export default {
                 magnify: mdiMagnify
             },
             carregando: false,
-            transmissions: []
+            transmissions: [],
+            keyword: '',
         };
     },
     created() {
         this.loadData();
     },
     computed: {
+        Transmissions() {
+            let records = [...this.transmissions];
+
+            if (this.keyword != "") {
+                let keywords = `${this.keyword}`
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .trim()
+                    .split(/\s+/gim);
+                for (let keyword of keywords) {
+                    records = records.filter((row) => {
+                        let nome = row.nome
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .toLowerCase()
+                            .trim();
+                        let regex = new RegExp(keyword, "igm");
+                        return regex.test(nome);
+                    });
+                }
+            }
+
+            return records;
+        },
         rascunhos() {
-            return this.transmissions.filter(transmission => transmission.status == 'RASCUNHO');
+            return this.Transmissions.filter(transmission => transmission.status == 'RASCUNHO');
         },
         enviadas() {
-            return this.transmissions.filter(transmission => transmission.status == 'ENVIADA');
+            return this.Transmissions.filter(transmission => transmission.status == 'ENVIADA');
         },
         interrompidas() {
-            return this.transmissions.filter(transmission => transmission.status == 'INTERROMPIDA');
+            return this.Transmissions.filter(transmission => transmission.status == 'INTERROMPIDA');
         },
         enviando() {
-            return this.transmissions.filter(transmission => transmission.status == 'ENVIANDO');
+            return this.Transmissions.filter(transmission => transmission.status == 'ENVIANDO');
         }
     },
     methods: {

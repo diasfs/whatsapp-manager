@@ -33,7 +33,7 @@
                     type="text"
                     class="form-control"
                     placeholder="Buscar lista pelo nome"
-                    v-model="nome"
+                    v-model="keyword"
                 />
                 <svg-icon
                     @click="buscar"
@@ -46,54 +46,55 @@
         </div>
 
         <div class="my-3 p-3 bg-body rounded shadow-sm">
-            <table class="table table-borderless" v-if="Records.length > 0">
-                <thead>
-                    <tr>
-                        <th class="text-center" width="50">
-                            <label style="font-size: 1rem">
-                                <input
-                                    type="checkbox"
-                                    class="form-check-input mx-1"
-                                    @click="selectAll"
-                                />
-                            </label>
-                        </th>
-                        <th>Nome</th>
-                        <th width="120px"  class="text-center" >Contatos</th>
-                        <th width="120px"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="row in Records" :key="row.id">
-                        <td>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    class="form-check-input mx-1"
-                                    @input="(e) => select(row)"
-                                    :checked="selected.includes(row.id)"
-                                    :value="row.id"
-                                />
-                            </label>
-                        </td>
-                        <td>{{ row.nome }}</td>
-                        <td class="text-center">{{ row.contact_count }}</td>
-                        <td class="text-end">
-                            <router-link
-                                :to="`/listas/${row.id}`"
-                                class="text-secondary text-decoration-none"
-                            >
-                                <svg-icon
-                                    type="mdi"
-                                    :path="icons.edit"
-                                    size="1.25em"
-                                ></svg-icon>
-                                Editar
-                            </router-link>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive" v-if="Records.length > 0">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th class="text-center" width="50">
+                                <label style="font-size: 1rem">
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input mx-1"
+                                        @click="selectAll"
+                                    />
+                                </label>
+                            </th>
+                            <th>Nome</th>
+                            <th width="120px"  class="text-center" >Contatos</th>
+                            <th width="150px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="row in Records" :key="row.id">
+                            <td>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input mx-1"
+                                        @input="(e) => select(row)"
+                                        :checked="selected.includes(row.id)"
+                                        :value="row.id"
+                                    />
+                                </label>
+                            </td>
+                            <td>{{ row.nome }}</td>
+                            <td class="text-center">{{ row.contact_count }}</td>
+                            <td class="text-end" >
+                                <router-link
+                                    :to="`/listas/${row.id}`"
+                                    class="text-secondary text-decoration-none"
+                                >
+                                    <svg-icon
+                                        type="mdi"
+                                        :path="icons.edit"
+                                        size="1.25em"
+                                    ></svg-icon>
+                                </router-link>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <div v-else>
                 <p>Nenhuma lista</p>
             </div>
@@ -107,7 +108,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/src/sweetalert2.scss";
 
 import SvgIcon from "@jamescoyle/vue-icon";
-import { mdiMagnify, mdiFileEdit } from "@mdi/js";
+import { mdiMagnify, mdiPencil } from "@mdi/js";
 
 export default {
     components: {
@@ -117,7 +118,7 @@ export default {
         return {
             icons: {
                 magnify: mdiMagnify,
-                edit: mdiFileEdit,
+                edit: mdiPencil,
             },
             carregando: false,
             records: [],

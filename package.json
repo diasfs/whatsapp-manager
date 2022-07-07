@@ -44,6 +44,7 @@
     "vue": "^3.2.25",
     "vue-phone-number-input": "^1.1.12",
     "vue-router": "^4",
+    "vuex": "^4.0.2",
     "whatsapp-web.js": "^1.16.2"
   },
   "scripts": {

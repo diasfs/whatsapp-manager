@@ -1,6 +1,8 @@
 import { Router } from 'express';
-import { Contact as ContactModel, Address as AddressModel, Tag as TagModel } from '../models/index.js';
+import {  Op } from 'sequelize';
+import { Contact as ContactModel, Address as AddressModel, Tag as TagModel, WhatsappMessage as WhatsappMessageModel } from '../models/index.js';
 import { Connections, getConnectionsByUserId } from '../connections.js';
+import Message from 'whatsapp-web.js/src/structures/Message.js'
 
 const router = new Router();
 
@@ -164,6 +166,7 @@ router.get('/contatos', async (req, res) => {
         */
         res.json(contacts);
 
+        /*
         try {
             for (let contact of contacts) {
                 if (contact.WhatsappContact && (/^http/.exec(contact.WhatsappContact.profilePictureUrl) || contact.WhatsappContact.profilePictureUrl == '' || contact.WhatsappContact.profilePictureUrl === null)) {
@@ -174,6 +177,7 @@ router.get('/contatos', async (req, res) => {
         } catch (err) {
             console.error(err);
         }
+        */
     } catch (err) {
         res.status(500).json(err);
     }
@@ -194,6 +198,23 @@ router.get('/contatos/:id', async (req, res) => {
             include: ['WhatsappContact', 'Address', 'Tags'],
         });
         contact = contact.toJSON();
+
+        let messages = await WhatsappMessageModel.findAll({
+            where: {
+                [Op.or]: [
+                    {
+                        to: contact.WhatsappContact.WhatsappId_serialized
+                    },
+                    {
+                        from: contact.WhatsappContact.WhatsappId_serialized
+                    },
+                    {
+                        author: contact.WhatsappContact.WhatsappId_serialized
+                    },
+                ]
+            }
+        });
+        contact.WhatsappMessages = messages;
         //contact.wa = await updateProfile(contact.id, req.userId);
         //console.log(contact.wa);
         res.json(contact);
@@ -328,6 +349,122 @@ router.delete('/contatos/delete', async (req, res) => {
             success: true
         })
     } catch (err) {
+        res.status(500).json({
+            error: err.message,
+        });
+    }
+})
+
+router.get('/contatos/:id/mensagens', async (req, res) => {
+    try {
+        let contact = await ContactModel.findOne({
+            where: {
+                UserId: req.userId,
+                id: req.params.id
+            },
+            include: ['WhatsappContact']
+        });
+
+        if (!contact) {
+            throw new Error("Contato não encontrado.");
+        }
+
+        if (!contact.WhatsappContact) {
+            throw new Error("Contato sem whatsapp");
+        }
+                
+        let [connection] = Connections[req.userId];
+        if (!connection) {
+            throw new Error("Conexão não encontrada");
+        }
+        let client = connection.WhatsappClient;
+        
+
+        let WaContact = await client.getContactById(contact.WhatsappContact.WhatsappId_serialized);
+        if (!WaContact) {
+            throw new Error("WaContact não encontrado.");
+        }
+
+        let WaChat = await WaContact.getChat();
+        if (!WaChat) {
+            throw new Error("WaChat não encontrado.");
+        }
+
+
+        WaChat.loadCurrentMessages = async function () {
+            let messages = await this.client.pupPage.evaluate(async (chatId) => {
+                const msgFilter = m => !m.isNotification;
+                const chat = window.Store.Chat.get(chatId);
+                let msgs = chat.msgs.getModelsArray().filter(msgFilter);
+                if (!msgs) {
+                    msgs = []
+                }
+                return msgs.map(m => window.WWebJS.getMessageModel(m));
+
+            }, this.id._serialized);
+            return messages.map(m => new Message(this.client, m));;
+        };
+        WaChat.loadEarlierMessages = async function () {
+            let messages = await this.client.pupPage.evaluate(async (chatId) => {
+                const msgFilter = m => !m.isNotification;
+                const chat = window.Store.Chat.get(chatId);
+                let msgs = await window.Store.ConversationMsgs.loadEarlierMsgs(chat);
+                if (!msgs || !msgs.length) {
+                    msgs = [];
+                }
+                return msgs.filter(msgFilter).map(m => window.WWebJS.getMessageModel(m));
+
+            }, this.id._serialized);
+            return messages.map(m => new Message(this.client, m));;
+        };
+
+
+        let Messages = {
+            async* [Symbol.asyncIterator]() {
+                let messages = await WaChat.loadCurrentMessages();
+                for(let msg of messages) {
+                    yield msg
+                }
+                while(true) {
+                    let messages = await WaChat.loadEarlierMessages();
+                    if (!messages || !messages.length) {
+                        break;
+                    }
+                    for (let msg of messages) {
+                        yield msg
+                    }
+                }
+            }
+        }
+
+        
+
+        /*
+        let messages = await WaChat.fetchMessages({
+            limit: Number.MAX_SAFE_INTEGER
+        });
+        */
+        let messages = [];
+        let timestamp = new Date()
+        timestamp.setDate(timestamp.getDate() -5);
+        timestamp = Math.round(timestamp.getTime()/1000);
+        
+        for await (let msg of Messages) {
+            if (null === msg) {
+                return;
+            }
+            messages.push(msg);
+            if (msg.timestamp < timestamp) {
+                console.log(msg.timestamp, timestamp)
+                break;
+            }
+        }
+
+        res.json(messages);
+
+
+    } catch (err) {
+        console.error(err);
         res.status(500).json({
             error: err.message,
         });

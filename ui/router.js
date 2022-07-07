@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+import store from './store';
 import routes from 'voie-pages';
 import SessionStorage from './lib/session-storage';
 
@@ -20,5 +21,9 @@ router.beforeEach(async (to, from) => {
     }
     document.body.setAttribute('data-page', to.name);
 });
+
+router.afterEach((to,from) => {
+    store.state.show_side_bar = false;
+})
 
 export default router;

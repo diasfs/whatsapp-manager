@@ -170,7 +170,8 @@ class WhatsappConnection extends Model {
                         where: {
                             from: msg.from,
                             to: msg.to,
-                            timestamp: msg.timestamp
+                            timestamp: msg.timestamp,
+                            UserId: this.UserId
                         }
                     })
                     if (!message) {
@@ -207,6 +208,8 @@ class WhatsappConnection extends Model {
                             Location: msg.location,
                             UserId: this.UserId
                         });
+
+
                     } else {
                         console.log('mensagem encontrada');
                         message.set({

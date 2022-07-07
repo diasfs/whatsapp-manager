@@ -14,10 +14,13 @@
             />
         </td>
         <td>
-            {{ contact.nome }} {{ contact.sobrenome }}<br />
-            <span v-if="contact.celular">{{ contact.celular }}<br /></span>
-            <span v-if="contact.email">{{ contact.email }}<br /></span>
-            <span v-if="contact.instagram">{{ contact.instagram }}<br /></span>
+            <div style="min-width: 200px">
+                {{ contact.nome }} {{ contact.sobrenome }}<br />
+                <span v-if="contact.celular">{{ contact.celular }}<br /></span>
+                <span v-if="contact.email">{{ contact.email }}<br /></span>
+                <span v-if="contact.instagram">{{ contact.instagram }}<br /></span>
+                
+            </div>
         </td>
         <td>{{ status }}</td>
         <td>

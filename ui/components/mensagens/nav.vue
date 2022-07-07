@@ -1,5 +1,5 @@
 <template>
-    <ul class="nav">
+    <ul class="nav d-block d-md-flex">
         <li class="nav-item">            
             <router-link
                 :to="`/mensagens/${transmission_id}/escolher-lista`"

@@ -1,5 +1,5 @@
 <template>
-    <nav class="col-md-3 col-lg-2 d-none d-md-block px-0 bg-secondary sidebar">
+    <nav class="col-md-3 col-lg-2 d-md-block px-0 bg-secondary sidebar" :class="{ 'd-none': !show }"  style="z-index: 99">
         <div class="sidebar-sticky bg-secondary">
             <div class="bg-primary">
                 <div class="bg-secondary py-2 rounded-top"></div>
@@ -106,6 +106,7 @@
 <script>
 import SessionStorage from '../lib/session-storage';
 export default {
+    props: ['show'],
     methods: {
         logout() {
             SessionStorage.removeItem('access_token');

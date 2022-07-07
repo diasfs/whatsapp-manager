@@ -361,9 +361,16 @@ export default {
             changed: false,
         };
     },
-    created() {
+    async created() {
         this.loadData();
         this.loadTags();
+        try {
+
+            let { data: messags } = await api.get(`/crm/contatos/${this.$route.params.id}/mensagens`);
+            console.log(messages);
+        } catch (err) {
+            console.error(err);
+        }
     },
     beforeRouteUpdate(to, from) {
         this.loadData();

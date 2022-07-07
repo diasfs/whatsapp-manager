@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { connection as sequelize } from './sequelize.js';
 import WhatsappContact from "./WhatsappContact.js";
+import WhatsappMessage from "./WhatsappMessage.js";
 import Address from './Address.js';
 import Tag from './Tag.js';
 
@@ -62,6 +63,9 @@ Contact.hasOne(WhatsappContact);
 
 Contact.belongsToMany(Tag, { through: 'ContactTags' });
 Tag.belongsToMany(Contact, { through: 'ContactTags' });
+
+Contact.belongsToMany(WhatsappMessage, { through: 'ContactMessages' ,constraints: false });
+WhatsappMessage.belongsToMany(Contact, { through: 'ContactMessages' ,constraints: false});
 
 
 export default Contact;

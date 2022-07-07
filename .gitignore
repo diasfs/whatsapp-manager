@@ -8,3 +8,6 @@ database.sqlite
 /backup
 /mysql
 /uploads
+/logs
+database.sqlite.bkp
+yarn.lock-

@@ -18,3 +18,7 @@ table tbody tr:nth-child(even) td {
 html {
   overflow-y: scroll;
 }
+th,
+td {
+  vertical-align: middle;
+}

@@ -18,9 +18,11 @@
             <small>
                 <router-link to="/register">Não possuo cadastro</router-link>
             </small>
+            <!--
             <small>
                 <router-link to="/forgoten">Esqueci minha senha</router-link>
             </small>
+            -->
         </p>
     </form>
 </template>
