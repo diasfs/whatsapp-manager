@@ -17,4 +17,4 @@ letsencrypt
 nginx/certs
 uploads
 wp
-nginx/*
+nginx
