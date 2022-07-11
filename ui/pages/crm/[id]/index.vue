@@ -342,10 +342,6 @@ export default {
             autocompleteItems: [],
             tag: "",
             tags: [
-                {
-                    id: "asdf",
-                    text: "oo",
-                },
             ],
             address: {
                 cep: "",

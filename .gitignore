@@ -13,6 +13,8 @@ database.sqlite.bkp
 yarn.lock-
 
 /wp
-
-nginx/certs
 letsencrypt
+nginx/certs
+uploads
+wp
+nginx
