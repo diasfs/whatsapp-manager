@@ -51,7 +51,7 @@
     "start:api": "yarn && nodemon api/index.js",
     "dev": "yarn && vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --host 0.0.0.0 --port 80"
   },
   "nodemonConfig": {
     "ignore": [

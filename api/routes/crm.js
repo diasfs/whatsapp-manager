@@ -198,23 +198,27 @@ router.get('/contatos/:id', async (req, res) => {
             include: ['WhatsappContact', 'Address', 'Tags'],
         });
         contact = contact.toJSON();
+        try {
+            let messages = await WhatsappMessageModel.findAll({
+                where: {
+                    [Op.or]: [
+                        {
+                            to: contact.WhatsappContact.WhatsappId_serialized
+                        },
+                        {
+                            from: contact.WhatsappContact.WhatsappId_serialized
+                        },
+                        {
+                            author: contact.WhatsappContact.WhatsappId_serialized
+                        },
+                    ]
+                }
+            });
+            contact.WhatsappMessages = messages;
 
-        let messages = await WhatsappMessageModel.findAll({
-            where: {
-                [Op.or]: [
-                    {
-                        to: contact.WhatsappContact.WhatsappId_serialized
-                    },
-                    {
-                        from: contact.WhatsappContact.WhatsappId_serialized
-                    },
-                    {
-                        author: contact.WhatsappContact.WhatsappId_serialized
-                    },
-                ]
-            }
-        });
-        contact.WhatsappMessages = messages;
+        } catch (err) {
+
+        }
         //contact.wa = await updateProfile(contact.id, req.userId);
         //console.log(contact.wa);
         res.json(contact);
@@ -268,7 +272,7 @@ router.post('/contatos/save', async (req, res) => {
         if (req.body.telefone !== null) {
             record.telefone = req.body.telefone;
         }
-        if (req.body.aniversario !== null) {
+        if (req.body.aniversario !== null && req.body.aniversario != '') {
             record.aniversario = req.body.aniversario;
         }
         if (req.body.Address) {

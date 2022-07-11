@@ -1,13 +1,38 @@
 version: '3.8'
 services:
   proxy:
-    image: nginxproxy/nginx-proxy
+    image: jwilder/nginx-proxy
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+    container_name: proxy
+    hostname: proxy
+    networks:
+      - proxy-tier
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx/conf.d/custom.conf:/etc/nginx/conf.d/custom.conf
+      - ./nginx/conf.d/custom.conf:/etc/nginx/conf.d/custom.conf       
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html      
+
+  letsencrypt-companion:
+    image: nginxproxy/acme-companion
+    restart: unless-stopped
+    networks:
+      - proxy-tier
+    depends_on:
+      - proxy
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+      - ./letsencrypt/acme:/etc/acme.sh
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro    
+
   redis:
     image: redis
     restart: unless-stopped
@@ -20,8 +45,8 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: sgt357
       MARIADB_DATABASE: whatsapp
-  front:
-    image: "node:16"
+  front_dev:
+    build: ./Docker/backend
     working_dir: /app
     expose:
       - "80"
@@ -31,14 +56,34 @@ services:
       - ./package.json:/app/package.json
       - ./vite.config.js:/app/vite.config.js
     environment:
-      - VITE_API_ENDPOINT=http://whatsapp.localhost/api
-      - VIRTUAL_HOST=whatsapp-ui.localhost
+      - VITE_API_ENDPOINT=https://oraclecloud.altgrupo.com.br/api
       - VIRTUAL_PORT=80
+      - VIRTUAL_HOST=oraclecloud.altgrupo.com.br
+      - LETSENCRYPT_HOST=oraclecloud.altgrupo.com.br 
+      - LETSENCRYPT_EMAIL=fabio@altgrupo.com.br
+      - VIRTUAL_PATH=/test
     command: "yarn dev"
+  front:
+    image: nginx
+    volumes:
+      - ./public:/usr/share/nginx/html
+    networks:
+      - proxy-tier
+      - default
+    environment:
+      - NGINX_HOST=oraclecloud.altgrupo.com.br
+      - NGINX_PORT=80
+      - VIRTUAL_HOST=oraclecloud.altgrupo.com.br
+      - VIRTUAL_PATH=/
+      - LETSENCRYPT_HOST=oraclecloud.altgrupo.com.br 
+      - LETSENCRYPT_EMAIL=fabio@altgrupo.com.br
   app:
     build: ./Docker/backend
     working_dir: "/app"
     privileged: true
+    networks:
+      - proxy-tier
+      - default
     depends_on:
       - db
       - redis
@@ -50,9 +95,7 @@ services:
       - ./WWebJS:/app/WWebJS
       - ./package.json:/app/package.json
       - ./.babelrc:/app/.babelrc
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - node_modules:/app/node_modules
-      - ~/.Xauthority:/root/.Xauthority
+      - ./node_modules:/app/node_modules      
       - ./logs/api:/app/logs/api
     environment:
       #- DB_URI=mysql://whatsapp:sgt357@mysql.dias.poa.br/whatsapp
@@ -63,18 +106,30 @@ services:
       - HEADLESS=true
       - CHROME_EXECUTABLE_PATH=/usr/bin/chromium
       - DISPLAY=${DISPLAY}
-      - VIRTUAL_HOST=whatsapp.localhost
+      - VIRTUAL_HOST=oraclecloud.altgrupo.com.br
       - VIRTUAL_PORT=5000
+      - VIRTUAL_PATH=~^/(api|uploads)
+      - LETSENCRYPT_HOST=oraclecloud.altgrupo.com.br 
+      - LETSENCRYPT_EMAIL=fabio@altgrupo.com.br
     command: "yarn start:api"
     expose:
       - "5000"
   phpmyadmin:
     image: phpmyadmin
-    ports:
-      - 8080:80
+    ports: 
+      - "8080:80"
+    networks:
+      - default
     depends_on:
       - db
     environment:
-      - PMA_ARBITRARY=1
-volumes:
-  node_modules:
+      - PMA_HOST=oraclecloud.altgrupo.com.br
+      - PMA_ARBITRARY=1       
+
+      - UPLOAD_LIMIT=2G
+      - MEMORY_LIMIT=2G
+
+
+
+networks:
+  proxy-tier:

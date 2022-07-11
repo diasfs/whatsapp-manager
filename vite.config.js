@@ -31,7 +31,7 @@ export default defineConfig({
         port: 80,
         hmr: {
             port: 80,
-            host: 'whatsapp-ui.localhost',
+            host: 'oraclecloud.altgrupo.com.br',
             protocol: 'ws'
         },
         proxy: {
