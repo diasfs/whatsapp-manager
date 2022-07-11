@@ -18,3 +18,5 @@ nginx/certs
 uploads
 wp
 nginx
+!nginx/config.d/custom.conf
+!nginx/config.d/default
