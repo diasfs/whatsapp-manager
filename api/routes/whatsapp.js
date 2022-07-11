@@ -593,8 +593,9 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
 });
 
 router.post("/transmission/:id/send", async (req, res) => {
+    let transmission;
     try {
-        let transmission = await TransmissionModel.findOne({
+        transmission = await TransmissionModel.findOne({
             where: {
                 id: req.params.id,
                 UserId: req.userId,
@@ -611,6 +612,9 @@ router.post("/transmission/:id/send", async (req, res) => {
             throw new Error("Mensagem não encontrada.");
         }
         let template = transmission.template;
+        if ('undefined' === typeof Connections[req.userId]) {
+            throw new Error("Você não possui uma conexão do whatsapp ativa.");
+        }
         let [connection] = Connections[req.userId];
 
         let client = connection.WhatsappClient;
@@ -720,7 +724,7 @@ router.post("/transmission/:id/send", async (req, res) => {
         
     } catch (err) {
         console.error(err);
-        if (transmission.status == 'ENVIANDO') {
+        if (transmission && transmission.status == 'ENVIANDO') {
             try {
                 transmission.status = 'INTERROMPIDA';
                 await transmission.save();

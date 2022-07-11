@@ -11,3 +11,8 @@ database.sqlite
 /logs
 database.sqlite.bkp
 yarn.lock-
+letsencrypt
+nginx/certs
+uploads
+wp
+nginx
