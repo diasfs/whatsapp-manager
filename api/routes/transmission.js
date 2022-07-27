@@ -82,6 +82,7 @@ router.post('/create', async (req, res) => {
     }
 });
 
+
 router.get('/:id', async (req, res) => {
     try {
         let transmission = await TransmissionModel.findOne({
@@ -315,6 +316,44 @@ router.get('/:id/sse', async (req, res) => {
     req.on("close", () => {
         unsubscribe(`transmission.save[${id}]`);
     });
+})
+
+router.delete('/', async (req, res, next) => {
+    try {
+        let UserId = req.userId;
+        let { ids } = req.body;
+
+        await TransmissionModel.destroy({
+            UserId,
+            id: ids
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.delete('/:id', async (req, res, next) => {
+    try {
+        let UserId = req.userId;
+        let { id } = req.params;
+
+        await TransmissionModel.destroy({
+            UserId,
+            id
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.use(async (err, req, res, next) => {
+    res.status(500).json({
+        error: err.message
+    })
 })
 
 export default router;
