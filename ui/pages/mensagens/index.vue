@@ -35,17 +35,17 @@
         </div>
 
 
-        <Transmissions :transmissions="rascunhos" v-if="rascunhos.length > 0">
+        <Transmissions :transmissions="rascunhos" @deleted="loadData" v-if="rascunhos.length > 0">
             <h3>Rascunhos</h3>
         </Transmissions>
 
-        <Transmissions :transmissions="enviando" v-if="enviando.length > 0">
+        <Transmissions :transmissions="enviando" @deleted="loadData" v-if="enviando.length > 0">
             <h3>Enviando</h3>
         </Transmissions>
-        <Transmissions :transmissions="interrompidas" v-if="interrompidas.length > 0">
+        <Transmissions :transmissions="interrompidas" @deleted="loadData" v-if="interrompidas.length > 0">
             <h3>Interrompidas</h3>
         </Transmissions>
-        <Transmissions :transmissions="enviadas" v-if="enviadas.length > 0">
+        <Transmissions :transmissions="enviadas" @deleted="loadData" v-if="enviadas.length > 0">
             <h3>Enviadas</h3>
         </Transmissions>
 
