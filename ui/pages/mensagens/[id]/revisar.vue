@@ -78,8 +78,50 @@ export default {
     methods: {
         async enviar() {
             try {
+                let { data: conexoes} = await api.get('/whatsapp/conexoes')
+                let inputOptions= conexoes.filter(conn => {
+                    return conn.state == 'CONNECTED';
+                });
+
+                if (0 === inputOptions.length) {
+                    return Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Você não possui nenhum aparelho conectado",
+                    });
+                }
+                inputOptions = inputOptions.reduce((acc, conn) => {
+                    
+                    acc[conn.id] = `[${conn.state}] ${conn.WhatsappContact.number}`
+                    return acc;
+                },{})
+                
+                const { value: connection_id, isDismissed } = await Swal.fire({
+                    title: "Aparelhos conectados para envio",
+                    input: 'select',
+                    inputOptions,
+                    inputPlaceholder: "Selecione um aparelho",
+                    showCancelButton: true
+                });
+                
+                if (isDismissed) {
+                    return;
+                }
+
+                if (!connection_id) {
+                    return Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Você não selecionou um aparelho",
+                    });
+                }
+
+
+                
                 await api.post(
-                    `/whatsapp/transmission/${this.transmission.id}/send`
+                    `/whatsapp/transmission/${this.transmission.id}/send`, {
+                        connection_id
+                    }
                 );
                 
                 this.$router.push(`/mensagens/${this.$route.params.id}/status`)

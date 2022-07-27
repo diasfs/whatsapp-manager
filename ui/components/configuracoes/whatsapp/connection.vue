@@ -19,7 +19,7 @@
                     :path="icons.whatsapp"
                     size="1.25em"
                 ></svg-icon>
-                {{ connection.Contact.number }}
+                {{ connection.Contact?connection.Contact.number:'' }}
             </p>
         </div>
         <div class="d-flex justify-content-md-start justify-content-center">

@@ -66,11 +66,14 @@ export default {
                 this.connections = connections;
             } catch (err) {
                 this.connections = [];
+                console.error(err)
+                /*
                 Swal.fire({
                     title: 'Oops...',
                     icon: 'error',
                     text: "Não foi possível carregar as conexões"
                 });
+                */
             }
             this.carregando = false;
         },

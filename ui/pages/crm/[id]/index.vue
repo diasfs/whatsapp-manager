@@ -1,5 +1,6 @@
 <template>
     <div class="container">
+        <!--
         <div class="text-end mt-5">
             <button class="btn btn-primary text-white mx-2" v-if="salvando">
                 SALVANDO...
@@ -12,6 +13,7 @@
                 SALVAR
             </button>
         </div>
+        -->
 
         <div class="my-3 p-3 bg-body rounded shadow-sm">
             <form>
@@ -360,6 +362,7 @@ export default {
     async created() {
         this.loadData();
         this.loadTags();
+        /*
         try {
 
             let { data: messags } = await api.get(`/crm/contatos/${this.$route.params.id}/mensagens`);
@@ -367,6 +370,7 @@ export default {
         } catch (err) {
             console.error(err);
         }
+        */
     },
     beforeRouteUpdate(to, from) {
         this.loadData();

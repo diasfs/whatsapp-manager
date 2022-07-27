@@ -22,7 +22,13 @@
                 
             </div>
         </td>
-        <td>{{ status }}</td>
+        <td align="right">
+            <span class="badge bg-success" v-if="status == 'Enviado'">{{ status }}</span>
+            <span class="badge bg-dark" v-if="status == 'Pendente'">{{ status }}</span>
+            <span class="badge bg-danger" v-if="status == 'Erro'">{{ status }}</span>
+            <p v-if="status == 'Erro'">{{ erro }}</p>
+
+        </td>
         <td>
             <!--
             <button class="btn" @click="preview">
@@ -45,7 +51,7 @@ import { mdiEye } from "@mdi/js";
 import api from "~/lib/api";
 
 export default {
-    props: ["contact_id", "preview_id", "transmission", 'status'],
+    props: ["contact_id", "preview_id", "transmission", 'status', 'erro'],
     components: {
         SvgIcon,
         

@@ -4,11 +4,47 @@
             <div class="bg-primary">
                 <div class="bg-secondary py-2 rounded-top"></div>
             </div>
-            <ul class="nav flex-column">
 
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
+            >
+                <span>WhatsApp</span>
+            </h6>
+
+            <ul class="nav flex-column mb-2">
+                <!--
                 <li class="nav-item">
-                    <router-link class="nav-link text-secondary" to="/">Início</router-link>
+                    <a class="nav-link" href="#">Minhas Tags</a>
                 </li>
+                -->
+                <li class="nav-item">
+                    <router-link class="nav-link" active-class="active" to="/configuracoes/whatsapp">Aparelhos Conectados</router-link>
+                </li>
+                <li class="nav-item">                    
+                    <router-link class="nav-link" active-class="active" to="/importar/whatsapp/contatos">Importar Contatos</router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link to="/mensagens" class="nav-link"  active-class="active">Mensagens</router-link>
+                </li>
+                
+                <!--
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Trocar Senha</a>
+                </li>
+                -->
+            </ul>
+
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
+            >
+                <span>CRM</span>
+            </h6>
+            <ul class="nav flex-column">
+                <!--
+                <li class="nav-item">
+                    <router-link class="nav-link" to="/">Início</router-link>
+                </li>
+                -->
                 <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Atendimento</a>
@@ -20,9 +56,7 @@
                 <li class="nav-item">
                     <router-link to="/listas" class="nav-link"  active-class="active">Listas</router-link>
                 </li>
-                <li class="nav-item">
-                    <router-link to="/mensagens" class="nav-link"  active-class="active">Mensagens</router-link>
-                </li>
+                
                 <!--
                 <li class="nav-item">
                     <a class="nav-link" href="#">Funil</a>
@@ -46,55 +80,9 @@
                 </li>
             </ul>
             -->
-            <h6
-                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
-            >
-                <span>Importar</span>
-            </h6>
+            
 
-            <ul class="nav flex-column mb-2">
-                <!--
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Grupos do WhatsApp</a>
-                </li>
-                -->
-                <li class="nav-item">                    
-                    <router-link class="nav-link" active-class="active" to="/importar/whatsapp/contatos">Contatos do WhatsApp</router-link>
-                </li>
-                <!--
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contatos de Conversas do WhatsApp</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Seguidores do Instagram</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Importar CSV</a>
-                </li>
-                -->
-            </ul>
-
-            <h6
-                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted"
-            >
-                <span>Configurações</span>
-            </h6>
-
-            <ul class="nav flex-column mb-2">
-                <!--
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Minhas Tags</a>
-                </li>
-                -->
-                <li class="nav-item">
-                    <router-link class="nav-link" active-class="active" to="/configuracoes/whatsapp">WhatsApp</router-link>
-                </li>
-                <!--
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Trocar Senha</a>
-                </li>
-                -->
-            </ul>
+            
             <ul class="nav flex-column mb-2">
                 <li class="nav-item">
                     <a class="nav-link" @click="logout" href="javascript:void(0)">Sair</a>

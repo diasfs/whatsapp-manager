@@ -18,7 +18,7 @@
             if (!access_token) {
                 return this.$router.replace('/login')
             }
-           this.$router.replace('/crm')
+           this.$router.replace('/configuracoes/whatsapp')
         }
     }
 </script>

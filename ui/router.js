@@ -16,7 +16,7 @@ router.beforeEach(async (to, from) => {
         }
     } else if (access_token && ['login', 'forgoten', 'register'].includes(to.name)) {
         return {
-            name: 'crm'
+            name: 'configuracoes/whatsapp'
         }
     }
     document.body.setAttribute('data-page', to.name);

@@ -29,6 +29,7 @@ api.interceptors.response.use(response => {
     if (error && error.response && error.response.status == 401) {
         SessionStorage.removeItem('access_token');
         router.replace('/');
+        return;
     }
     return Promise.reject(error);
 })

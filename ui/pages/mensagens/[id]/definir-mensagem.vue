@@ -118,31 +118,31 @@
                         <Editor :template="template" :upload_url="upload_url" @ready="ed => this.editor = ed" />
                         <ul class="nav">
                             <li class="nav-item">
-                                <a href="" class="nav-link">
-                                    <span
-                                        class="badge bg-primary"
-                                        @click.prevent.stop="
+                                <a href="" class="nav-link" draggable="false" @click.prevent.stop="
                                             () =>
                                                 insertVariable(
                                                     'Nome',
                                                     '{{ nome }}'
                                                 )
-                                        "
+                                        ">
+                                    <span
+                                        class="badge bg-primary"
+                                        
                                         >Nome</span
                                     >
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="" class="nav-link">
-                                    <span
-                                        class="badge bg-primary"
-                                        @click.prevent.stop="
+                                <a href="" class="nav-link" draggable="false" @click.prevent.stop="
                                             () =>
                                                 insertVariable(
                                                     'Sobrenome',
                                                     '{{ sobrenome }}'
                                                 )
-                                        "
+                                        ">
+                                    <span
+                                        class="badge bg-primary"
+                                        
                                         >Sobrenome</span
                                     >
                                 </a>
@@ -151,6 +151,7 @@
                                 <a
                                     href=""
                                     class="nav-link"
+                                    draggable="false"
                                     @click.prevent.stop="
                                         () =>
                                             insertVariable(
@@ -167,6 +168,7 @@
                             <li class="nav-item">
                                 <a
                                     href=""
+                                    draggable="false"
                                     class="nav-link"
                                     @click.prevent.stop="
                                         () =>
@@ -200,6 +202,7 @@
                     <ul class="nav emoji-nav">
                         <li
                             class="nav-item"
+                            
                             :class="{ active: title == emoji_category }"
                             v-for="{ title } in emojiGroups"
                             :key="title"
@@ -214,6 +217,7 @@
                         <a
                             @click.prevent.stop="() => insertEmoji(emoji.emoji)"
                             v-for="emoji in emojis"
+                            draggable="false"
                             :key="emoji.emoji"
                             href="javascript:void(0)"
                             class="emoji text-decoration-none"

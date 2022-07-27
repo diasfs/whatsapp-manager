@@ -28,12 +28,12 @@
                     <thead>
                         <tr>
                             <th colspan="2">Contato</th>
-                            <th width="100px"></th>
+                            <th></th>
                             <th width="100px"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <Row v-for="contact in contacts" :key="contact.id" :status="contact.TransmissionQueue.status" :transmission="transmission" :contact_id="contact.id" :preview_id="preview_id" @preview="preview"></Row>
+                        <Row v-for="contact in contacts" :key="contact.id" :erro="contact.TransmissionQueue.error" :status="contact.TransmissionQueue.status" :transmission="transmission" :contact_id="contact.id" :preview_id="preview_id" @preview="preview"></Row>
                     </tbody>
                 </table>
             </div>
@@ -83,11 +83,53 @@ export default {
     methods: {
         async enviar() {
             try {
+                let { data: conexoes} = await api.get('/whatsapp/conexoes')
+                let inputOptions= conexoes.filter(conn => {
+                    return conn.state == 'CONNECTED';
+                });
+
+                if (0 === inputOptions.length) {
+                    return Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Você não possui nenhum aparelho conectado",
+                    });
+                }
+                inputOptions = inputOptions.reduce((acc, conn) => {
+                    
+                    acc[conn.id] = `[${conn.state}] ${conn.WhatsappContact.number}`
+                    return acc;
+                },{})
+                
+                const { value: connection_id, isDismissed } = await Swal.fire({
+                    title: "Aparelhos conectados para envio",
+                    input: 'select',
+                    inputOptions,
+                    inputPlaceholder: "Selecione um aparelho",
+                    showCancelButton: true
+                });
+                
+                if (isDismissed) {
+                    return;
+                }
+
+                if (!connection_id) {
+                    return Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "Você não selecionou um aparelho",
+                    });
+                }
+
+
+                
                 await api.post(
-                    `/whatsapp/transmission/${this.transmission.id}/send`
+                    `/whatsapp/transmission/${this.transmission.id}/send`, {
+                        connection_id
+                    }
                 );
                 
-                //this.$router.push(`/mensagens/${this.$route.params.id}/status`)
+                this.$router.push(`/mensagens/${this.$route.params.id}/status`)
                 
             } catch (err) {
                 console.error(err);
