@@ -2,7 +2,9 @@ import { Router } from "express";
 import { v4 as uuid } from "uuid";
 import MessageMedia from "whatsapp-web.js/src/structures/MessageMedia.js";
 import { Connections, Events as ConnectionsEvents } from "../connections.js";
-import { WhatsappContact  } from '../models/index.js';
+import { WhatsappContact } from '../models/index.js';
+import EventSource from 'eventsource';
+import axios from 'axios';
 
 import fs from 'fs/promises';
 import * as url from 'url';
@@ -19,7 +21,7 @@ import {
 } from "../models/index.js";
 
 const router = new Router();
-
+/*
 WhatsappConnectionModel.findAll({
     include: "WhatsappContact",
 }).then((connections) => {
@@ -48,7 +50,7 @@ WhatsappConnectionModel.findAll({
     //console.log(Connections);
     ConnectionsEvents.emit("updated");
 });
-
+*/
 /*
 const updateContacts = async () => {
     console.log('atualizando')
@@ -69,6 +71,49 @@ updateContacts().then(() => {
 
 router.get("/conexoes", async (req, res) => {
     //console.log(req.userId);
+    try {
+        let connections = await WhatsappConnectionModel.findAll({
+            where: {
+                UserId: req.userId
+            },
+            include: [
+                WhatsappContactModel
+            ]
+        });
+        let Connections = [];
+        for(let connection of connections) {
+            let { data: {state, status} } = await axios.get(`http://wapi:3000/${connection.id}/state`);
+            if (state == 'started' && status == null) {
+                status = 'DISCONNECTED'
+            }
+            console.log({ state, status })
+            Connections.push({
+                ...connection.toJSON(),
+                Contact: connection.WhatsappContact ? connection.WhatsappContact.toJSON() : null,
+                state: status,
+                status: state
+            })
+        }
+        /*
+        connections = connections.map(connection => {
+
+
+            return {
+                ...connection.toJSON(),
+                Contact: connection.WhatsappContact?connection.WhatsappContact.toJSON():null
+            }
+        })
+        */
+
+
+        res.json(Connections);
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+    /*
     if ("undefined" === typeof Connections[req.userId]) {
         return res.json([]);
     }
@@ -103,7 +148,7 @@ router.get("/conexoes", async (req, res) => {
             c.state = connection.state;
             c.importing = connection.importing;
             c.import_percentual = 0;
-    
+
             if (connection.WhatsappContact) {
                 updateProfilePicUrl(connection);
                 c.Contact = connection.WhatsappContact.toJSON();
@@ -118,9 +163,9 @@ router.get("/conexoes", async (req, res) => {
                     );
                     let about = await contact.getAbout();
                     let profilePictureUrl = await contact.getProfilePicUrl();
-    
+
                     let number = await contact.getFormattedNumber();
-    
+
                     Contact = await WhatsappContactModel.create({
                         WhatsappConnectionId: connection.id,
                         WhatsappId: contact.id,
@@ -150,12 +195,194 @@ router.get("/conexoes", async (req, res) => {
     }
     //    console.log(connections);
     return res.json(connections);
+    */
 });
+
+router.get("/conexoes/nova", async (req, res) => {
+    const headers = {
+        "Content-Type": "text/event-stream",
+        Connection: "keep-alive",
+        "Cache-Control": "no-cache",
+    };
+    res.writeHead(200, headers);
+    const clientId = uuid();
+    const connection = new WhatsappConnectionModel({
+        id: clientId,
+        UserId: req.userId,
+    });
+    connection.save();
+
+    let events = new EventSource(`http://wapi:3000/${clientId}/sse`);
+    events.on('error', console.error)
+    let axiosClient = axios.create({
+        baseURL: `http://wapi:3000/${clientId}`
+    });
+
+    events.addEventListener('data', console.log);
+    events.addEventListener('qr', evt => {
+        console.log('qr', evt);
+        let { qr } = JSON.parse(evt.data);
+        const data = `data: ${JSON.stringify({ qr })}\n\n`;
+        res.write(data);
+    })
+    events.addEventListener('ready', async () => {
+        try {
+            console.log('ready');
+            let { data: info } = await axiosClient.get('info');
+            let { wid, pushname } = info;
+            connection.wid = wid;
+            connection.pushname = pushname;
+            let { data: contact } = await axiosClient.get(`contacts/${wid._serialized}`);
+            connection.name = contact.name;
+            await connection.save();
+
+            let { data: { about } } = await axiosClient.get(`contacts/${wid._serialized}/about`);
+            let { data: { profilePictureUrl } } = await axiosClient.get(`contacts/${wid._serialized}/profile-picture`);
+            let { data: { number } } = await axiosClient.get(`contacts/${wid._serialized}/formatted-number`);
+
+            connection.WhatsappContact = await WhatsappContactModel.create({
+                WhatsappConnectionId: connection.id,
+                WhatsappId: contact.id,
+                businessProfile: contact.businessProfile,
+                isBlocked: contact.isBlocked,
+                isBusiness: contact.isBusiness,
+                isEnterprise: contact.isEnterprise,
+                isGroup: contact.isGroup,
+                isUser: contact.isUser,
+                isWAContact: contact.isWAContact,
+                name: contact.name,
+                number: number,
+                pushname: contact.pushname,
+                shortName: contact.shortName,
+                verifiedName: contact.verifiedName,
+                about,
+                profilePictureUrl
+            });
+            res.write(
+                `event: authenticated\ndata: ${JSON.stringify({ clientId })}\n\n`
+            );
+
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            res.write(
+                `event: error\ndata: ${JSON.stringify({ error: err.message })}\n\n`
+            );
+        }
+
+
+    });
+    req.on('close', () => {
+        events.close();
+    })
+
+    /*
+    const client = connection.WhatsappClient;
+    client.on("qr", (qr) => {
+        const data = `data: ${JSON.stringify({ qr })}\n\n`;
+        res.write(data);
+    });
+    */
+    /*
+    client.on("authenticated", () => {
+        console.log("authenticated");
+    });
+
+    let ready = false;
+    client.on("ready", async () => {
+        try {
+            connection.wid = client.info.wid;
+            connection.pushname = client.info.pushname;
+
+            let contact = await client.getContactById(connection.wid._serialized);
+            connection.name = contact.name;
+            await connection.save();
+
+            let about = await contact.getAbout();
+            let profilePictureUrl = await contact.getProfilePicUrl();
+
+            let number = await contact.getFormattedNumber();
+
+            connection.WhatsappContact = await WhatsappContactModel.create({
+                WhatsappConnectionId: connection.id,
+                WhatsappId: contact.id,
+                businessProfile: contact.businessProfile,
+                isBlocked: contact.isBlocked,
+                isBusiness: contact.isBusiness,
+                isEnterprise: contact.isEnterprise,
+                isGroup: contact.isGroup,
+                isUser: contact.isUser,
+                isWAContact: contact.isWAContact,
+                name: contact.name,
+                number: number,
+                pushname: contact.pushname,
+                shortName: contact.shortName,
+                verifiedName: contact.verifiedName,
+                about,
+                profilePictureUrl,
+            });
+
+            if ("undefined" === typeof Connections[req.userId]) {
+                Connections[req.userId] = [];
+            }
+            Connections[req.userId].push(connection);
+            ConnectionsEvents.emit("updated");
+            ConnectionsEvents.emit("new_connection", connection);
+
+            ready = true;
+            res.write(
+                `event: authenticated\ndata: ${JSON.stringify({ clientId })}\n\n`
+            );
+
+        } catch (err) {
+            console.error(err);
+        }
+    });
+    req.on("close", () => {
+        if (!ready) {
+            try {
+                client.destroy();
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    });
+    */
+});
+
 
 router.get("/conexao/:id", async (req, res) => {
     try {
-
         let connection_id = req.params.id;
+
+        let connection = await WhatsappConnectionModel.findOne({
+            where: {
+                id: connection_id,
+                UserId: req.userId
+            },
+            include: [WhatsappContactModel]
+        });
+
+        if (!connection) {
+            return res.status(404).json({
+                error: "Conexão não encontrada.",
+            });
+        }
+
+        let { data: { state, status } } = await axios.get(`http://wapi:3000/${connection.id}/state`);
+
+        let c = connection.toJSON();
+        c.state = status;
+        c.importing = connection.importing;
+        c.import_percentual = connection.import_percentual;
+        c.Contact = connection.WhatsappContact.toJSON();
+
+        /*
+
         if ("undefined" === typeof Connections[req.userId]) {
             return res.status(404).json({
                 error: "Conexão não encontrada.",
@@ -210,6 +437,7 @@ router.get("/conexao/:id", async (req, res) => {
             }
             c.Contact = Contact.toJSON();
         }
+        */
         /*
         let contact = await connection.getWhatsappContact();
         if (contact) {
@@ -224,93 +452,16 @@ router.get("/conexao/:id", async (req, res) => {
     }
 });
 
-router.get("/conexoes/nova", async (req, res) => {
-    const headers = {
-        "Content-Type": "text/event-stream",
-        Connection: "keep-alive",
-        "Cache-Control": "no-cache",
-    };
-    res.writeHead(200, headers);
-    const clientId = uuid();
-    const connection = new WhatsappConnectionModel({
-        id: clientId,
-        UserId: req.userId,
-    });
-
-    const client = connection.WhatsappClient;
-    client.on("qr", (qr) => {
-        const data = `data: ${JSON.stringify({ qr })}\n\n`;
-        res.write(data);
-    });
-
-    client.on("authenticated", () => {
-        console.log("authenticated");
-    });
-
-    let ready = false;
-    client.on("ready", async () => {
-        try {
-            connection.wid = client.info.wid;
-            connection.pushname = client.info.pushname;
-    
-            let contact = await client.getContactById(connection.wid._serialized);
-            connection.name = contact.name;
-            await connection.save();
-    
-            let about = await contact.getAbout();
-            let profilePictureUrl = await contact.getProfilePicUrl();
-    
-            let number = await contact.getFormattedNumber();
-    
-            connection.WhatsappContact = await WhatsappContactModel.create({
-                WhatsappConnectionId: connection.id,
-                WhatsappId: contact.id,
-                businessProfile: contact.businessProfile,
-                isBlocked: contact.isBlocked,
-                isBusiness: contact.isBusiness,
-                isEnterprise: contact.isEnterprise,
-                isGroup: contact.isGroup,
-                isUser: contact.isUser,
-                isWAContact: contact.isWAContact,
-                name: contact.name,
-                number: number,
-                pushname: contact.pushname,
-                shortName: contact.shortName,
-                verifiedName: contact.verifiedName,
-                about,
-                profilePictureUrl,
-            });
-    
-            if ("undefined" === typeof Connections[req.userId]) {
-                Connections[req.userId] = [];
-            }
-            Connections[req.userId].push(connection);
-            ConnectionsEvents.emit("updated");
-            ConnectionsEvents.emit("new_connection", connection);
-    
-            ready = true;
-            res.write(
-                `event: authenticated\ndata: ${JSON.stringify({ clientId })}\n\n`
-            );
-
-        } catch (err) {
-            console.error(err);
-        }
-    });
-    req.on("close", () => {
-        if (!ready) {
-            try {
-                client.destroy();
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
-    });
-});
 
 router.get("/conexao/:id/reconectar", async (req, res) => {
     const connection_id = req.params.id;
+    let connection = await WhatsappConnectionModel.findByPk(connection_id);
+    if (!connection) {
+        return res.status(404).json({
+            error: "Conexão não encontrada",
+        });
+    }
+    /*
     if (!Connections[req.userId]) {
         return res.status(404).json({
             error: "Conexão não encontrada",
@@ -324,6 +475,7 @@ router.get("/conexao/:id/reconectar", async (req, res) => {
             error: "Conexão não encontrada",
         });
     }
+    */
 
     const headers = {
         "Content-Type": "text/event-stream",
@@ -332,31 +484,80 @@ router.get("/conexao/:id/reconectar", async (req, res) => {
     };
     res.writeHead(200, headers);
 
+    let events = new EventSource(`http://wapi:3000/${connection_id}/sse`);
+
+    events.addEventListener('qr', evt => {
+        let { qr } = JSON.parse(evt.data);
+        const data = `data: ${JSON.stringify({ qr })}\n\n`;
+        res.write(data);
+    })
+    events.addEventListener('ready', async () => {        
+        res.write(
+            `event: authenticated\ndata: ${JSON.stringify({ connection_id })}\n\n`
+        );
+        
+    });
+
+    req.on('close', () => {
+        events.close();
+    });
+    /*
     const client = connection.WhatsappClient;
     client.on("qr", (qr) => {
         const data = `data: ${JSON.stringify({ qr })}\n\n`;
         res.write(data);
     });
-
+    
     let ready = false;
     let clientId = connection.id;
     client.on("ready", async () => {
         ready = true;
         res.write(
             `event: authenticated\ndata: ${JSON.stringify({ clientId })}\n\n`
-        );
-    });
-
-    req.on("close", () => {
-        if (!ready) {
-            console.log('not ready disconnecting')
-            connection.disconnect();
-        }
-    });
+            );
+        });
+        
+        req.on("close", () => {
+            if (!ready) {
+                console.log('not ready disconnecting')
+                connection.disconnect();
+            }
+        });
+    */
 });
 
 router.post("/conexao/:id/desconectar", async (req, res) => {
-    const connection_id = req.params.id;
+    try {
+        const connection_id = req.params.id;
+    
+        let connection = await WhatsappConnectionModel.findByPk(connection_id);
+        if (!connection) {
+            return res.status(404).json({
+                error: "Conexão não encontrada",
+            });
+        }
+    
+        let axiosClient = axios.create({
+            baseURL: `http://wapi:3000/${connection_id}`
+        });
+    
+        await connection.disconnect();
+        await connection.updateState();
+
+        setTimeout(() => {
+            res.json({
+                message: "Número desconectado com sucesso.",
+            });
+        }, 3000)
+
+    } catch (err) {
+        res.status(500).json({
+            error: error.message,
+        });
+    }
+
+
+    /*
     if (!Connections[req.userId]) {
         return res.status(404).json({
             error: "Conexão não encontrada",
@@ -388,9 +589,36 @@ router.post("/conexao/:id/desconectar", async (req, res) => {
             error: error.message,
         });
     }
+    */
 });
 
 router.delete("/conexao/:id", async (req, res) => {
+    try {
+        let connection_id = req.params.id;
+        let connection = await WhatsappConnectionModel.findOne({
+            where: {
+                id: connection_id,
+                UserId: req.userId
+            }
+        });
+        if (!connection) {
+            return res.status(404).json({
+                error: "Conexão não encontrada.",
+            });
+        }
+        
+        await connection.disconnect();
+        await connection.destroy();
+        
+        res.json({
+            message: "conexão removida com sucesso.",
+        });
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
+    /*
     if ("undefined" === Connections[req.userId]) {
         return res.status(404).json({
             error: "Conexão não encontrada.",
@@ -409,7 +637,7 @@ router.delete("/conexao/:id", async (req, res) => {
     Connections[req.userId] = Connections[req.userId].filter(
         ({ id }) => id !== connection_id
     );
-    
+
     try {
         console.log('deleting')
         await connection.logout();
@@ -419,7 +647,7 @@ router.delete("/conexao/:id", async (req, res) => {
     try {
         console.log('deleting')
         connection.destroy();
-    } catch(err) {
+    } catch (err) {
         console.error(err);
     }
     ConnectionsEvents.emit("updated");
@@ -427,29 +655,38 @@ router.delete("/conexao/:id", async (req, res) => {
     res.json({
         message: "conexão removida com sucesso.",
     });
+    */
 });
 
 router.post("/conexao/:id/importar-contatos", async (req, res) => {
     let connection;
+    const connection_id = req.params.id;
     try {
+        connection = await WhatsappConnectionModel.findOne({
+            where: {
+                UserId: req.userId,
+                id: connection_id
+            }
+        })
+        /*
         if ("undefined" === Connections[req.userId]) {
             return res.status(404).json({
                 error: "Conexão não encontrada.",
             });
         }
-        const connection_id = req.params.id;
 
         connection = Connections[req.userId].find(
             (connection) => connection.id == connection_id
         );
-
         console.log('connection found');
-
+ 
         if (!connection) {
             return res.status(404).json({
                 error: "Conexão não encontrada.",
             });
         }
+        */
+
 
         let tag = await TagModel.findOne({
             where: {
@@ -469,7 +706,7 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
         connection.importing = true;
         let imported = 0;
         let rows = await connection.getContacts();
-        
+
 
         //await fs.writeFile(`${root}/backup/contatos.json`, JSON.stringify(rows));
 
@@ -477,7 +714,7 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
             if (row.isGroup) return false;
             if (row.isBlocked) return false;
             if (!row.isUser) return false;
-            if (!row.isWAContact) {return false};
+            if (!row.isWAContact) { return false };
             if ('undefined' != typeof row.name) return true;
             if ('undefined' != typeof row.pushname) return true;
             if ('undefined' != typeof row.shortName) return true;
@@ -487,18 +724,12 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
         });
 
         for (let row of rows) {
-            
-            
+
+
             let [number = '', profilePictureUrl = '', about = ''] = await Promise.all([
-                row.getFormattedNumber(),
-                row.getProfilePicUrl().catch(err => {
-                    console.error(err);
-                    return '';
-                }),
-                row.getAbout().catch(err => {
-                    console.log(err);
-                    return '';
-                })
+                connection.getFormattedNumber(row.id._serialized),
+                connection.getProfilePictureUrl(row.id._serialized),
+                connection.getAbout(row.id._serialized)
             ]);
 
 
@@ -529,7 +760,7 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
                     sobrenome = sobrenome.join(" ");
                 }
             } catch (err) {
-                console.log(err.message, row);
+                console.error(err.message, row);
             }
 
 
@@ -554,7 +785,7 @@ router.post("/conexao/:id/importar-contatos", async (req, res) => {
                 });
             }
 
-            console.log({ profilePictureUrl })
+            
             wacontact.set({
                 about,
                 profilePictureUrl,
@@ -604,36 +835,58 @@ router.post("/transmission/:id/send", async (req, res) => {
                 {
                     model: ContactModel,
                     as: 'Queue',
-                    include: [WhatsappContactModel],
+                    //include: [WhatsappContactModel],
                 }
             ],
         });
         if (!transmission) {
             throw new Error("Mensagem não encontrada.");
         }
-        let template = transmission.template;
-        if ('undefined' === typeof Connections[req.userId]) {
-            throw new Error("Você não possui uma conexão do whatsapp ativa.");
+        let connection = await WhatsappConnectionModel.findByPk(req.body.connection_id);
+        if (!connection) {
+            throw new Error("Número selecionado para envio não encontrado");
         }
-        let [connection] = Connections[req.userId];
+        await connection.updateState();
+        if ('CONNECTED' != connection.state) {
+            throw new Error("O número selecionado para envio não encontra-se conectado.");
+        }        
 
-        let client = connection.WhatsappClient;
+        if (transmission.Queue.length == 0) {
+            throw new Error("Lista vazia.");
+        }
+
+        if (!transmission.template || !transmission.template.blocks || transmission.template.blocks.length == 0) {
+            console.log(transmission.template);
+            throw new Error("Mensagem vazia.");
+        }
 
         transmission.status == 'ENVIANDO';
         transmission.pendentes = transmission.Queue.length;
         await transmission.save();
+
+
         res.json(transmission.toJSON());
 
         for (let contact of transmission.Queue) {
             if (contact.TransmissionQueue.status != 'Pendente') {
                 continue;
             }
+
             try {
-                let blocks = template.blocks.map(block => {
+                await contact.updateProfile();
+                let wacontact = await contact.getWhatsappContact();
+
+                if (!wacontact) {
+                    throw new Error("Contato sem Whatsapp")
+                }
+                console.log(wacontact);
+                contact.WhatsappContact = wacontact;
+
+                let blocks = transmission.template.blocks.map(block => {
                     let row = { ...block };
                     if (row.type == 'paragraph') {
                         row.data = { ...row.data };
-                        row.data.text = row.data.text
+                        row.data.text = (row.data.text||'')
                             .replace(/\{\{\s*nome\s*\}\}/igm, contact.nome || '')
                             .replace(/\{\{\s*sobrenome\s*\}\}/igm, contact.sobrenome || '')
                             .replace(/\{\{\s*telefone\s*\}\}/igm, contact.telefone || '')
@@ -659,15 +912,20 @@ router.post("/transmission/:id/send", async (req, res) => {
                     if (block.type === "paragraph") {
                         let text = block.data.text;
 
-                        await client.sendMessage(
+                        await connection.sendMessage(
                             contact.WhatsappContact.WhatsappId._serialized,
                             text
                         );
                     }
                     if (block.type === "image") {
-                        //let url = block.data.file.url;
-                        let url = block.data.file.url.replace(/^.+\/uploads/igm, `${root}/uploads`);
+                        let url = block.data.file.url;
+                        await connection.sendMessageMedia(contact.WhatsappContact.WhatsappId._serialized, null, null, null, url, {
+                            caption: block.data.caption,
+                            sendVideoAsGif: true
+                        })
+                        //let url = block.data.file.url.replace(/^.+\/uploads/igm, `${root}/uploads`);
                         //let media = await MessageMedia.fromUrl(url);
+                        /*
                         let media = await MessageMedia.fromFilePath(url);
                         if (/\.gif$/.test(url)) {
                             media.isGif = true;
@@ -682,13 +940,19 @@ router.post("/transmission/:id/send", async (req, res) => {
                                 sendVideoAsGif: true
                             }
                         );
+                        */
                     }
                     if (block.type === "attaches") {
-                        //let url = block.data.file.url;
-                        let url = block.data.file.url.replace(/^.+\/uploads/igm, `${root}/uploads`);
+                        let url = block.data.file.url;
+                        await connection.sendMessageMedia(contact.WhatsappContact.WhatsappId._serialized, null, null, null, url, {
+                            sendAudioAsVoice: true,
+                            caption: block.data.title,
+                        })
+                        //let url = block.data.file.url.replace(/^.+\/uploads/igm, `${root}/uploads`);
                         //let media = await MessageMedia.fromUrl(url);
-                        let media = await MessageMedia.fromFilePath(url);
+                        //let media = await MessageMedia.fromFilePath(url);
                         //await chat.sendMessage(media);
+                        /*
                         await client.sendMessage(
                             contact.WhatsappContact.WhatsappId._serialized,
                             media,
@@ -697,6 +961,7 @@ router.post("/transmission/:id/send", async (req, res) => {
                                 caption: block.data.title,
                             }
                         );
+                        */
                     }
                 }
 
@@ -710,6 +975,7 @@ router.post("/transmission/:id/send", async (req, res) => {
                 // set status to Erro
                 console.error(err);
                 contact.TransmissionQueue.status = 'Erro';
+                contact.TransmissionQueue.error = err.message;
                 await contact.TransmissionQueue.save();
 
                 transmission.erros++;
@@ -721,7 +987,7 @@ router.post("/transmission/:id/send", async (req, res) => {
         transmission.status = 'ENVIADA';
         await transmission.save();
 
-        
+
     } catch (err) {
         console.error(err);
         if (transmission && transmission.status == 'ENVIANDO') {

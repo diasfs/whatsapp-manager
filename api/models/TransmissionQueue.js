@@ -29,6 +29,11 @@ TransmissionQueue.init({
         }
         */
     },
+    error: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: ''        
+    },
     status: {
         type: DataTypes.ENUM('Pendente', 'Enviado', 'Visualizado', 'Respondido', 'Erro'),
         allowNull: false,

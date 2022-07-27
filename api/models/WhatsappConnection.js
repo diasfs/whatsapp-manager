@@ -118,10 +118,14 @@ class WhatsappConnection extends Model {
     qr;
     state;
     importing = false;
-
+    get axiosClient() {
+        return axios.create({
+            baseURL: `http://wapi:3000/${this.id}`
+        })
+    }
     get WhatsappClient() {
         if (!this.#client) {
-            console.log('creating client');
+            
             this.#client = new Client({
                 puppeteer: {
                     executablePath,
@@ -257,23 +261,74 @@ class WhatsappConnection extends Model {
         return this.#client;
     }
 
+    async updateQr() {
+        try {
+            let { data: { qr } } = await this.axiosClient.get('/qr');
+            this.qr = qr;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            this.qr = null;           
+        }
+    }
+
+    async updateState() {
+        try {            
+            let { data: { state, status } } = await this.axiosClient.get('/state');
+            this.state = status;
+            this.status = state;
+        } catch (err) {
+            this.state = 'DISCONNECTED';
+        }
+    }
+
     async logout() {
+        /*
         if (!this.#client) {
             return;
         }
         await this.#client.logout().catch(console.error);
         this.#client = null;
+        */
+       try {
+           let { data } = await this.axiosClient.get('/disconnect');
+           this.updateState();
+       } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+       }
     }
 
     async disconnect() {
+        return this.logout();
+        /*
         if (null !== this.#client) {
             await this.#client.destroy().catch(console.error);
         }
         this.#client = null;
         this.state = "DISCONNECTED";
+        */
     }
 
     async getContacts() {
+        try {
+            let { data: contacts } = await this.axiosClient.get('/contacts');
+            return contacts;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return []
+        }
+        /*
         let client = this.WhatsappClient;
         if (this.state != "CONNECTED") {
             return [];
@@ -283,6 +338,142 @@ class WhatsappConnection extends Model {
             console.error(err);
             return [];
         });
+        */
+    }
+
+    async getInfo() {
+        try {
+            let { data: info } = await this.axiosClient.get(`/info`);
+            return info;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async getNumberId(number) {
+        try {
+            let { data: id } = await this.axiosClient.get(`/number-id/${number}`);
+            return id;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async getFormattedNumber(contact_id) {
+        try {
+            let { data : { number } } = await this.axiosClient.get(`/contacts/${contact_id}/formatted-number`);
+            return number;
+        } catch {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async getIsRegisteredUser(number) {
+        try {
+            let { data } = await this.axiosClient.get(`/is-registered-user/${number}`);
+            return data;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async getProfilePictureUrl(contact_id) {
+        try {
+            let { data: { picture } } = await this.axiosClient.get(`/contacts/${contact_id}/profile-picture`);
+            return picture;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async getAbout(contact_id) {
+        try {
+            let { data: { about } } = await this.axiosClient.get(`/contacts/${contact_id}/about`);
+            return about;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+    async getContactById(contact_id) {
+        try {
+            let { data } = await this.axiosClient.get(`/contacts/${contact_id}`);
+            return data;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async sendMessage(contact_id, content = '', options = {}) {
+        try {
+            let { data: message } = await this.axiosClient.post(`/contacts/${contact_id}/message`, {
+                content, 
+                options
+            })
+            return message;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
+    }
+
+    async sendMessageMedia(contact_id, mimetype, data = null, filename = null, url = null, options = {}) {
+        try {
+            let { data: message } = await this.axiosClient.post(`/contacts/${contact_id}/message-media`, {
+                mimetype,
+                data,
+                filename,
+                url,
+                options
+            });
+
+            return message;
+        } catch (err) {
+            if (err.response && err.response.data) {
+                console.error(err.response.data);
+            } else {
+                console.error(err);
+            }
+            return null;
+        }
     }
 }
 

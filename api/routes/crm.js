@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {  Op } from 'sequelize';
-import { Contact as ContactModel, Address as AddressModel, Tag as TagModel, WhatsappMessage as WhatsappMessageModel } from '../models/index.js';
+import { Contact as ContactModel, Address as AddressModel, Tag as TagModel, WhatsappContact as WhatsappContactModel, WhatsappMessage as WhatsappMessageModel, WhatsappConnection as WhatsappConnectionModel } from '../models/index.js';
 import { Connections, getConnectionsByUserId } from '../connections.js';
 import Message from 'whatsapp-web.js/src/structures/Message.js'
 
@@ -18,49 +18,108 @@ const updateProfile = async (contactId, user_id) => {
             throw new Error("Contact not found");
         }
 
-        let [connection] = getConnectionsByUserId(user_id);
-        let client = connection.WhatsappClient;
-        if ("CONNECTED" !== connection.state) {
-            await new Promise((resolve, reject) => {
-                client.on("ready", resolve);
-                client.on("disconnected", reject);
-                client.on("auth_failure", reject);
+        let connections = await WhatsappConnectionModel.findAll({
+            where: {
+                UserId: user_id
+            }
+        });
+        
+        let contact;
+        let profile_picutre;
+        let about;
+        let number;
+        for (let connection of connections) {
+            try {
+                await connection.updateState();
+                if ('CONNECTED' !== connection.state) {
+                    continue;
+                }
+                let celular = Contact.celular.replace(/\D+/igm,'');
+                let telefone = Contact.telefone.replace(/\D+/igm,'');
+                if ('' != celular) {
+                    celular = await connection.getFormattedNumber(celular);
+                    let wid = await connection.getNumberId(celular);
+                    let is_registered_user = await connection.getIsRegisteredUser(wid._serialized);
+                    if (is_registered_user) {                    
+                        contact = await connection.getContactById(wid._serialized); 
+                        if (contact) {
+                            profile_picutre = await connection.getProfilePictureUrl(contact.id._serialized);
+                            about = await connection.getAbout(contact.id._serialized);
+                            number = await connection.getFormattedNumber(contact.id._serialized);   
+                            break;
+                        }
+                    }
+                }
+                if ('' != telefone) {
+                    telefone = await connection.getFormattedNumber(telefone);
+                    let wid = await connection.getNumberId(telefone);
+                    let is_registered_user = await connection.getIsRegisteredUser(wid._serialized);
+                    if (is_registered_user) {                    
+                        contact = await connection.getContactById(wid._serialized);  
+                             
+                        if (contact) {
+                            profile_picutre = await connection.getProfilePictureUrl(contact.id._serialized);
+                            about = await connection.getAbout(contact.id._serialized);
+                            number = await connection.getFormattedNumber(contact.id._serialized);
+                            
+                            break;
+                        }
+                    }
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        if (!contact) {
+            throw new Error('contact not found')
+        }
+
+        let row = contact;
+
+        let wacontact = await WhatsappContactModel.findOne({
+            where: {
+                number,
+                ContactId: Contact.id
+            }
+        });
+        if (!wacontact) {
+            wacontact = await WhatsappContactModel.create({
+                number,
+                ContactId: Contact.id
             });
         }
 
-        let celular = (await client.getFormattedNumber(Contact.celular)).replace(/\D+/igm, '');
-        console.log({ celular });
-        let id = await await client.getNumberId(celular);
-        console.log({
-            id,
-            celular
-        })
-        if (null === id) {
-            //throw new Error("WAContact not found")
-            id = {
-                _serialized: celular + '@c.us'
-            }
-            //id = celular
-        }
-        let is_registred_user = await client.isRegisteredUser(id._serialized);
-        console.log({ is_registred_user });
-        let contact = await client.getContactById(id._serialized);
-        if (!contact) {
-            console.log({
-                id,
-                celular
-            })
-        }
+
+        wacontact.set({
+            about,
+            profilePictureUrl: profile_picutre,
+            WhatsappId: row.id,
+            businessProfile: row.businessProfile,
+            isBlocked: row.isBlocked,
+            isBusiness: row.isBusiness,
+            isEnterprise: row.isEnterprise,
+            isGroup: row.isGroup,
+            isUser: row.isUser,
+            isWAContact: row.isWAContact,
+            name: row.name,
+            pushname: row.pushname,
+            shortName: row.shortName,
+            verifiedName: row.verifiedName
+        });
+
+        wacontact.save();
+        
+
         return contact;
-
-
 
     } catch (error) {
         console.error(error);
     }
     return null;
 }
-
+/*
 const updateProfilePicUrl = async (contactId, user_id) => {
     try {
         let Contact = await ContactModel.findOne({
@@ -100,7 +159,7 @@ const updateProfilePicUrl = async (contactId, user_id) => {
         console.error(error);
     }
 };
-
+*/
 router.get('/contatos', async (req, res) => {
     try {
 
@@ -198,6 +257,7 @@ router.get('/contatos/:id', async (req, res) => {
             include: ['WhatsappContact', 'Address', 'Tags'],
         });
         contact = contact.toJSON();
+        /*
         try {
             let messages = await WhatsappMessageModel.findAll({
                 where: {
@@ -219,6 +279,7 @@ router.get('/contatos/:id', async (req, res) => {
         } catch (err) {
 
         }
+        */
         //contact.wa = await updateProfile(contact.id, req.userId);
         //console.log(contact.wa);
         res.json(contact);
@@ -267,7 +328,7 @@ router.post('/contatos/save', async (req, res) => {
             record.instagram = req.body.instagram;
         }
         if (req.body.celular !== null) {
-            record.celular = req.body.celular;
+            record.celular = req.body.celular;            
         }
         if (req.body.telefone !== null) {
             record.telefone = req.body.telefone;
@@ -299,7 +360,7 @@ router.post('/contatos/save', async (req, res) => {
                         name: row.name
                     }
                 });
-                console.log(tag, row.name)
+                
                 if (!tag) {
                     tag = await TagModel.create({
                         UserId: req.userId,
@@ -313,8 +374,7 @@ router.post('/contatos/save', async (req, res) => {
             }
             let ids = req.body.Tags.map(({ id }) => id);
             ids = [...new Set(ids)];
-            console.log({ ids })
-            console.log(req.body.Tags)
+            
             if (0 != ids.length) {
                 let tags = await TagModel.findAll({
                     where: {
@@ -324,9 +384,14 @@ router.post('/contatos/save', async (req, res) => {
                 });
                 await record.setTags(tags);
             }
-        }
+        }        
 
         await record.save();
+
+        updateProfile(record.id, record.UserId).catch(err => {
+            console.error(err);
+        });
+
         res.json(record);
     } catch (err) {
         res.status(500).json({
@@ -360,6 +425,7 @@ router.delete('/contatos/delete', async (req, res) => {
 })
 
 router.get('/contatos/:id/mensagens', async (req, res) => {
+    /*
     try {
         let contact = await ContactModel.findOne({
             where: {
@@ -443,11 +509,6 @@ router.get('/contatos/:id/mensagens', async (req, res) => {
 
         
 
-        /*
-        let messages = await WaChat.fetchMessages({
-            limit: Number.MAX_SAFE_INTEGER
-        });
-        */
         let messages = [];
         let timestamp = new Date()
         timestamp.setDate(timestamp.getDate() -5);
@@ -473,6 +534,8 @@ router.get('/contatos/:id/mensagens', async (req, res) => {
             error: err.message,
         });
     }
+    */
+   res.json([])
 })
 
 export default router;
