@@ -324,8 +324,10 @@ router.delete('/', async (req, res, next) => {
         let { ids } = req.body;
 
         await TransmissionModel.destroy({
-            UserId,
-            id: ids
+            where: {
+                UserId,
+                id: ids
+            }
         });
 
         res.json({ success: true });
@@ -340,8 +342,11 @@ router.delete('/:id', async (req, res, next) => {
         let { id } = req.params;
 
         await TransmissionModel.destroy({
-            UserId,
-            id
+            where: {
+                UserId,
+                id
+
+            }
         });
 
         res.json({ success: true });
