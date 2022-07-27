@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  whatsapp-api:
+    build: .
+    user: '1001:1001'
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - CHROME_EXECUTABLE_PATH=/usr/bin/chromium
+      - HEADLESS=true
+      - APP_DATA=/data
+      - VIRTUAL_HOST=oraclecloud.altgrupo.com.br
+      - VIRTUAL_PORT=3000
+      - VIRTUAL_PATH=~^/(wapi)
+      - LETSENCRYPT_HOST=oraclecloud.altgrupo.com.br 
+      - LETSENCRYPT_EMAIL=fabio@altgrupo.com.br
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../wweb-api-data:/data
+      - ./src:/home/node/app/src
+      - ./package.json:/home/node/app/package.json
+    expose:
+      - 3000
