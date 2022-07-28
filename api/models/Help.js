@@ -35,4 +35,6 @@ Help.init({
     paranoid: true
 });
 
-await Help.init();
+await Help.sync();
+
+export default Help;
