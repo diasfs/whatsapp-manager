@@ -23,11 +23,13 @@ Role.init({
 
 Role.belongsToMany(User, {
     constraints: false,
+    through: 'UserRole',
     as: 'Users'
 });
 
 User.belongsToMany(Roles, {
     constraints: false,
+    through: 'UserRole',
     as: 'Roles'
 });
 
