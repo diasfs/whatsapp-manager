@@ -27,7 +27,7 @@ Role.belongsToMany(User, {
     as: 'Users'
 });
 
-User.belongsToMany(Roles, {
+User.belongsToMany(Role, {
     constraints: false,
     through: 'UserRole',
     as: 'Roles'
