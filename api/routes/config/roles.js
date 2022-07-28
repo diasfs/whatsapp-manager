@@ -57,7 +57,9 @@ const save = async (req, res, next) => {
             });
         } else {
             role = await Role.findOne({
-                id
+                where: {
+                    id
+                }
             });
         }
         role.set({
