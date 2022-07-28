@@ -39,7 +39,7 @@
     "sqlite3": "^5.0.2",
     "sweetalert2": "^11.4.4",
     "unicode-emoji": "^2.3.0",
-    "vite": "^2.8.4",
+    "vite": "^3.0.3",
     "vite-plugin-mix": "^0.3.1",
     "vite-plugin-voie": "^0.7.3",
     "vue": "^3.2.25",
@@ -50,9 +50,9 @@
   },
   "scripts": {
     "start:api": "yarn && nodemon api/index.js",
-    "dev": "yarn && vite --host 0.0.0.0",
+    "dev": "yarn && vite serve",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 80"
+    "preview": "vite preview"
   },
   "nodemonConfig": {
     "ignore": [

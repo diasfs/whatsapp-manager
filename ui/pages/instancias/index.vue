@@ -32,11 +32,11 @@ export default {
     },
     methods: {
         async loadData() {
-            let { data: instancias } = await axios.get('https://oraclecloud.altgrupo.com.br/wapi/instances');
+            let { data: instancias } = await axios.get('/wapi/instances');
             this.instancias = instancias;
         },
         async logout(session_id) {
-            await axios.get(`https://oraclecloud.altgrupo.com.br/wapi/${session_id}/disconnect`);
+            await axios.get(`/wapi/${session_id}/disconnect`);
             await this.loadData();
         }
     },
