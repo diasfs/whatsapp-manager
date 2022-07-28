@@ -32,3 +32,6 @@ User.belongsToMany(Roles, {
 });
 
 await Role.sync();
+
+
+export default Role;
