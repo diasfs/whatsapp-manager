@@ -70,7 +70,6 @@ const save = async (req, res, next) => {
     }
 };
 router.post('/', save);
-router.push('/:id', save);
 router.put('/:id', save);
 
 
