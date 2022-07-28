@@ -35,4 +35,4 @@ Help.init({
     paranoid: true
 });
 
-Help.init();
+await Help.init();
