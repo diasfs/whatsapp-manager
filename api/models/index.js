@@ -6,6 +6,7 @@ import Location from './Location.js';
 import Tag from './Tag.js';
 import User from './User.js';
 import { Role } from './Role.js';
+import { Help } from './Help.js';
 import WhatsappConnection from './WhatsappConnection.js';
 import WhatsappContact from './WhatsappContact.js';
 import WhatsappLink from './WhatsappLink.js';
@@ -25,6 +26,7 @@ export {
     Tag,
     User,
     Role,
+    Help,
     WhatsappConnection,
     WhatsappContact,
     WhatsappLink,
@@ -42,6 +44,8 @@ export default {
     Location,
     Tag,
     User,
+    Role,
+    Help,
     WhatsappConnection,
     WhatsappContact,
     WhatsappLink,
