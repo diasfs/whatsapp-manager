@@ -64,7 +64,7 @@ const save = async (req, res, next) => {
             name
         });
         await role.save();
-        re.json(role);
+        res.json(role);
     } catch (err) {
         next(err);
     }
