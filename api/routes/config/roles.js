@@ -6,7 +6,11 @@ export const router = Router();
 
 router.get('/', async (req, res, next) => {
     try {
-        let roles = await Role.findAll();
+        let roles = await Role.findAll({
+            order: [
+                ["name", "asc"]
+            ]
+        });
         res.json(roles);
     } catch (err) {
         next(err);
