@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Role } from "../../models/Role";
+import { Role } from "../../models/Role.js";
 import { Op } from 'sequelize';
 
 export const router = Router();
