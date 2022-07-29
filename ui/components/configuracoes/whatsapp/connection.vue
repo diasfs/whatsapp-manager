@@ -84,6 +84,10 @@ export default {
         };
     },
     computed: {
+        help() {
+            console.log(this.$store.getters['help/slugs'])
+            return this.$store.getters['help/slugs']['whatsapp-aparelhos-conectados-qr-code'].text||'';
+        },
         phoneNumber() {
             return this.connection.wid.user.replace(
                 /(\d{2})(\d{2})(\d{4,5})(\d{4})/,
@@ -111,7 +115,7 @@ export default {
                 
                 swal.update({
                     imageUrl: url,
-                    text: null
+                    html: this.help
                 });
             });
             events.addEventListener('authenticated', async event => {

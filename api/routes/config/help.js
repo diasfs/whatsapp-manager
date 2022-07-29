@@ -21,7 +21,9 @@ router.get('/:id', async (req, res, next) => {
     try {
         let { id } = req.params;
         let help = await Help.findOne({
-            id
+            where: {
+                id
+            }
         });
         if (!help) {
             return res.status(404).json({
@@ -57,7 +59,8 @@ const save = async (req, res, next) => {
         }
         if (!id) {
             help = await Help.create({
-                name
+                name,
+                text
             });
         } else {
             help = await Help.findOne({
@@ -67,7 +70,8 @@ const save = async (req, res, next) => {
             });
         }
         help.set({
-            name
+            name,
+            text
         });
         await help.save();
         res.json(help);

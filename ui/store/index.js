@@ -1,5 +1,6 @@
 import { createStore } from 'vuex';
 import api from '~/lib/api';
+import helpStore from './help';
 
 export const store = createStore({
     state() {
@@ -22,9 +23,15 @@ export const store = createStore({
         toggleSideBar(state) {
             state.show_side_bar = !state.show_side_bar
         }
+    },
+    modules: {
+        help: helpStore
     }
 });
 
+(async () => {
+    store.dispatch('help/loadData');
+})();
 
 let update = async () => {
     await store.dispatch('updateConnections');

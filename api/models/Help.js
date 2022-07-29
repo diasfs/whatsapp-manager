@@ -19,9 +19,11 @@ Help.init({
         allowNull: false,
         set(v) {
             this.setDataValue('name', v);
+            v = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/igm, ' ')
             this.setDataValue('slug', slugify(v, {
                 lower: true, 
-                locale: 'pt',                
+                locale: 'pt',
+                strict: true
             }))
         }
     },

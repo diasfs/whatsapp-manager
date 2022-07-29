@@ -55,6 +55,12 @@ export default {
             connections: []
         };
     },
+    computed: {
+        help() {
+            console.log(this.$store.getters['help/slugs'])
+            return this.$store.getters['help/slugs']['whatsapp-aparelhos-conectados-qr-code'].text||'';
+        },
+    },
     created() {
         this.loadConnections();        
     },
@@ -101,7 +107,7 @@ export default {
                 swal.update({
                     //imageUrl: url,
                     text: null,
-                    html: `<img src="${url}" />`,
+                    html: `<img src="${url}" />${this.help}`,
                 });
             });
             events.addEventListener('authenticated', async event => {
