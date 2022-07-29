@@ -21,7 +21,9 @@ router.get('/:id', async (req, res, next) => {
     try {
         let { id } = req.params;
         let role = await Role.findOne({
-            id
+            where: {
+                id
+            }
         });
         if (!role) {
             return res.status(404).json({
